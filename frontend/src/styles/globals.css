@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global resets ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: #0a0a0f;
+  color: #f8f8ff;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;     /* Layout handles scrolling internally */
+}
+
+/* ─── Scrollbar styling ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+
+/* ─── Markdown content in chat responses ─── */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+  color: #f8f8ff;
+}
+.markdown-content h1 { font-size: 1.25rem; }
+.markdown-content h2 { font-size: 1.1rem; }
+.markdown-content h3 { font-size: 1rem; }
+.markdown-content p { margin: 0.5em 0; line-height: 1.7; }
+.markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin: 0.5em 0; }
+.markdown-content li { margin: 0.25em 0; }
+.markdown-content code {
+  background: #1e1e2a;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+}
+.markdown-content pre {
+  background: #0d0d15;
+  border: 1px solid #2a2a3a;
+  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 0.75em 0;
+}
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+}
+.markdown-content blockquote {
+  border-left: 3px solid #7c3aed;
+  padding-left: 1em;
+  margin: 0.5em 0;
+  color: #a0a0b8;
+}
+.markdown-content table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+.markdown-content th { background: #1e1e2a; padding: 8px 12px; border: 1px solid #2a2a3a; font-weight: 500; }
+.markdown-content td { padding: 8px 12px; border: 1px solid #2a2a3a; }
+.markdown-content strong { color: #f8f8ff; font-weight: 600; }
+
+/* ─── Typing animation for AI responses ─── */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.typing-cursor::after {
+  content: '▋';
+  animation: blink 1s infinite;
+  color: #7c3aed;
+}
+
+/* ─── Glass card effect ─── */
+.glass {
+  background: rgba(22, 22, 31, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(42, 42, 58, 0.8);
+}
+
+/* ─── Purple glow on focus ─── */
+.focus-purple:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4);
+}
