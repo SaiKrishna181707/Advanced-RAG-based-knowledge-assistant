@@ -1,54 +1,54 @@
 import os
 import pickle
-import time
-import requests
+import re
 import numpy as np
 import faiss
 
 FAISS_INDEX_PATH = "/tmp/faiss.index"
 CHUNK_STORE_PATH = "/tmp/chunk_store.pkl"
-EMBEDDING_DIM = 1024
+EMBEDDING_DIM = 512
 
 _index = None
 _chunk_store = []
 
 
-def _embed_texts(texts: list, input_type: str = "search_document") -> np.ndarray:
-    api_key = os.getenv("COHERE_API_KEY")
-    if not api_key:
-        raise ValueError("COHERE_API_KEY not set")
+def _tokenize(text: str) -> list:
+    return re.findall(r'\b[a-zA-Z][a-zA-Z0-9]{1,}\b', text.lower())
 
-    all_embeddings = []
-    batch_size = 90
 
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i:i + batch_size]
-        for attempt in range(3):
-            try:
-                response = requests.post(
-                    "https://api.cohere.com/v1/embed",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "texts": batch,
-                        "model": "embed-english-light-v3.0",
-                        "input_type": input_type,
-                    },
-                    timeout=30,
-                )
-                if response.status_code == 200:
-                    all_embeddings.extend(response.json()["embeddings"])
-                    break
-                else:
-                    raise ValueError(f"Cohere API error {response.status_code}: {response.text}")
-            except requests.exceptions.Timeout:
-                if attempt == 2:
-                    raise ValueError("Cohere API timeout")
-                time.sleep(2)
+def _text_to_vector(text: str) -> np.ndarray:
+    """
+    Feature hashing with bigrams + unigrams for better semantic capture.
+    Bigrams help match phrases like 'machine learning' vs just 'machine'.
+    """
+    tokens = _tokenize(text)
+    vec = np.zeros(EMBEDDING_DIM, dtype="float32")
 
-    return np.array(all_embeddings, dtype="float32")
+    # Unigrams
+    for token in tokens:
+        idx = hash(token) % EMBEDDING_DIM
+        vec[abs(idx)] += 1.0
+
+    # Bigrams
+    for i in range(len(tokens) - 1):
+        bigram = tokens[i] + "_" + tokens[i + 1]
+        idx = hash(bigram) % EMBEDDING_DIM
+        vec[abs(idx)] += 1.5  # Bigrams weighted higher
+
+    # TF normalization — divide by doc length
+    if len(tokens) > 0:
+        vec = vec / len(tokens)
+
+    # L2 normalize
+    norm = np.linalg.norm(vec)
+    if norm > 0:
+        vec = vec / norm
+
+    return vec
+
+
+def _embed_texts(texts: list) -> np.ndarray:
+    return np.array([_text_to_vector(t) for t in texts], dtype="float32")
 
 
 def _get_index():
@@ -76,10 +76,8 @@ def _save_index():
 def embed_and_store(chunks: list, document_id: int) -> list:
     index, chunk_store = _get_index()
     texts = [c["content"] for c in chunks]
-    print(f"[Embedder] Embedding {len(texts)} chunks via Cohere REST API...")
-    embeddings = _embed_texts(texts, input_type="search_document")
-    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
-    embeddings = embeddings / np.maximum(norms, 1e-9)
+    print(f"[Embedder] Embedding {len(texts)} chunks locally...")
+    embeddings = _embed_texts(texts)
     start_idx = index.ntotal
     index.add(embeddings)
     for i, chunk in enumerate(chunks):
@@ -99,17 +97,15 @@ def search(query: str, top_k: int = 5) -> list:
     index, chunk_store = _get_index()
     if index.ntotal == 0:
         return []
-    query_embedding = _embed_texts([query], input_type="search_query")
-    norm = np.linalg.norm(query_embedding)
-    query_embedding = query_embedding / max(norm, 1e-9)
-    k = min(top_k, index.ntotal)
-    scores, indices = index.search(query_embedding, k)
+    query_vec = _embed_texts([query])
+    k = min(top_k * 2, index.ntotal)
+    scores, indices = index.search(query_vec, k)
     results = []
     for score, idx in zip(scores[0], indices[0]):
         if idx == -1:
             continue
         results.append({**chunk_store[idx], "score": float(score)})
-    return results
+    return results[:top_k]
 
 
 def delete_document_vectors(document_id: int):
@@ -121,9 +117,7 @@ def delete_document_vectors(document_id: int):
         _chunk_store = []
         _save_index()
         return
-    embeddings = _embed_texts([c["content"] for c in remaining], input_type="search_document")
-    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
-    embeddings = embeddings / np.maximum(norms, 1e-9)
+    embeddings = _embed_texts([c["content"] for c in remaining])
     new_index = faiss.IndexFlatIP(EMBEDDING_DIM)
     new_index.add(embeddings)
     for i, chunk in enumerate(remaining):

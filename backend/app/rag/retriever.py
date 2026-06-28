@@ -1,102 +1,45 @@
-"""
-rag/retriever.py  —  Hybrid Retrieval
-
-We combine TWO search methods and merge their results:
-
-1. Dense search (semantic):   embedding similarity via FAISS
-   → Finds meaning-level matches ("car" matches "automobile")
-
-2. Sparse search (keyword):   BM25 — classic TF-IDF style keyword matching
-   → Finds exact term matches ("SQLAlchemy" matches "SQLAlchemy")
-
-Hybrid retrieval significantly outperforms either method alone.
-Final ranking uses Reciprocal Rank Fusion (RRF) — a simple but effective formula.
-"""
-
 import os
 from rank_bm25 import BM25Okapi
 from . import embedder
+import re
 
 
-def retrieve(query: str, top_k: int = None) -> list[dict]:
-    """
-    Main retrieval function.
-    Returns ranked list of relevant chunks with metadata.
-    """
+def _tokenize(text: str) -> list:
+    return re.findall(r'\b[a-zA-Z][a-zA-Z0-9]{1,}\b', text.lower())
+
+
+def retrieve(query: str, top_k: int = None) -> list:
     top_k = top_k or int(os.getenv("RETRIEVAL_TOP_K", 5))
 
-    # 1. Semantic search
-    semantic_results = embedder.search(query, top_k=top_k * 2)
-
-    if not semantic_results:
+    # Get all chunks from store
+    _, chunk_store = embedder._get_index()
+    if not chunk_store:
         return []
 
-    # 2. BM25 keyword search over the same candidate set
-    # (We run BM25 over retrieved chunks, not the full index, for speed)
-    bm25_results = _bm25_search(query, semantic_results, top_k=top_k * 2)
-
-    # 3. Fuse rankings
-    fused = _reciprocal_rank_fusion(semantic_results, bm25_results, top_k=top_k)
-
-    return fused
-
-
-def _bm25_search(query: str, candidates: list[dict], top_k: int) -> list[dict]:
-    """BM25 over a candidate set of chunks."""
-    if not candidates:
-        return []
-
-    corpus = [c["content"].lower().split() for c in candidates]
+    # BM25 over ALL chunks — much better for exact term matching
+    corpus = [_tokenize(c["content"]) for c in chunk_store]
     bm25 = BM25Okapi(corpus)
+    query_tokens = _tokenize(query)
+    bm25_scores = bm25.get_scores(query_tokens)
 
-    query_tokens = query.lower().split()
-    scores = bm25.get_scores(query_tokens)
+    # FAISS vector search
+    vector_results = embedder.search(query, top_k=top_k * 2)
+    vector_ids = {r["faiss_id"]: r["score"] for r in vector_results}
 
-    ranked = sorted(
-        zip(scores, candidates),
-        key=lambda x: x[0],
-        reverse=True
-    )[:top_k]
+    # Fuse: BM25 rank + vector score
+    scored = []
+    for i, chunk in enumerate(chunk_store):
+        bm25_score = float(bm25_scores[i])
+        vector_score = vector_ids.get(chunk["faiss_id"], 0.0)
 
-    results = []
-    for score, chunk in ranked:
-        results.append({**chunk, "bm25_score": float(score)})
+        # Normalize BM25 score
+        max_bm25 = max(bm25_scores) if max(bm25_scores) > 0 else 1
+        norm_bm25 = bm25_score / max_bm25
 
-    return results
+        # Combined score: BM25 weighted higher since it's more reliable here
+        combined = (0.65 * norm_bm25) + (0.35 * vector_score)
+        scored.append({**chunk, "rrf_score": combined, "score": combined})
 
-
-def _reciprocal_rank_fusion(
-    semantic: list[dict],
-    bm25: list[dict],
-    top_k: int,
-    k: int = 60
-) -> list[dict]:
-    """
-    RRF formula: score(doc) = Σ 1/(k + rank)
-    k=60 is the standard constant from the original RRF paper.
-    """
-    scores = {}
-
-    # Build lookup by content (used as unique ID)
-    all_chunks = {}
-
-    for rank, chunk in enumerate(semantic):
-        key = chunk["content"][:100]
-        scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
-        all_chunks[key] = chunk
-
-    for rank, chunk in enumerate(bm25):
-        key = chunk["content"][:100]
-        scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
-        all_chunks[key] = chunk
-
-    # Sort by fused score
-    ranked_keys = sorted(scores, key=lambda k: scores[k], reverse=True)[:top_k]
-
-    results = []
-    for key in ranked_keys:
-        chunk = all_chunks[key].copy()
-        chunk["rrf_score"] = round(scores[key], 4)
-        results.append(chunk)
-
-    return results
+    # Sort and return top_k
+    scored.sort(key=lambda x: x["rrf_score"], reverse=True)
+    return scored[:top_k]
