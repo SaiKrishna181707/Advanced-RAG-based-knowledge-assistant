@@ -29,10 +29,13 @@ def _get_client() -> Groq:
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key or api_key == "your_groq_api_key_here":
             raise ValueError(
-                "GROQ_API_KEY not set in .env file. "
-                "Get a free key at https://console.groq.com"
+                "GROQ_API_KEY not set. Get a free key at https://console.groq.com"
             )
-        _client = Groq(api_key=api_key)
+        import httpx
+        _client = Groq(
+            api_key=api_key,
+            http_client=httpx.Client()
+        )
     return _client
 
 
