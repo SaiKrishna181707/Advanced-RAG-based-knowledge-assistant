@@ -1,50 +1,54 @@
 import os
 import pickle
-import time
-import requests
+import hashlib
 import numpy as np
 import faiss
 
-_BASE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 FAISS_INDEX_PATH = "/tmp/faiss.index"
 CHUNK_STORE_PATH = "/tmp/chunk_store.pkl"
-EMBEDDING_DIM = 384
-HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_DIM = 256
 
 _index = None
 _chunk_store = []
+_vocab = {}
 
-def _get_headers():
-    token = os.getenv("HF_TOKEN", "")
-    return {"Authorization": f"Bearer {token}"} if token else {}
+
+def _tokenize(text: str) -> list:
+    import re
+    return re.findall(r'\b[a-z]{2,}\b', text.lower())
+
+
+def _get_vocab():
+    global _vocab
+    if not _vocab and os.path.exists("/tmp/vocab.pkl"):
+        with open("/tmp/vocab.pkl", "rb") as f:
+            _vocab = pickle.load(f)
+    return _vocab
+
+
+def _save_vocab():
+    with open("/tmp/vocab.pkl", "wb") as f:
+        pickle.dump(_vocab, f)
+
+
+def _text_to_vector(text: str) -> np.ndarray:
+    """Convert text to a fixed-size vector using hashing trick."""
+    tokens = _tokenize(text)
+    vec = np.zeros(EMBEDDING_DIM, dtype="float32")
+    for token in tokens:
+        # Hash each token to a bucket position
+        idx = int(hashlib.md5(token.encode()).hexdigest(), 16) % EMBEDDING_DIM
+        vec[idx] += 1.0
+    # Normalize
+    norm = np.linalg.norm(vec)
+    if norm > 0:
+        vec = vec / norm
+    return vec
+
 
 def _embed_texts(texts: list) -> np.ndarray:
-    all_embeddings = []
-    for i in range(0, len(texts), 32):
-        batch = texts[i:i+32]
-        for attempt in range(3):
-            try:
-                response = requests.post(
-                    HF_API_URL,
-                    headers=_get_headers(),
-                    json={"inputs": batch, "options": {"wait_for_model": True}},
-                    timeout=60
-                )
-                if response.status_code == 200:
-                    embeddings = response.json()
-                    if isinstance(embeddings[0][0], list):
-                        embeddings = [np.mean(e, axis=0) for e in embeddings]
-                    all_embeddings.extend(embeddings)
-                    break
-                elif response.status_code == 503:
-                    time.sleep(10)
-                else:
-                    raise ValueError(f"HF API error {response.status_code}: {response.text}")
-            except requests.exceptions.Timeout:
-                if attempt == 2:
-                    raise ValueError("HuggingFace API timeout")
-                time.sleep(5)
-    return np.array(all_embeddings, dtype="float32")
+    return np.array([_text_to_vector(t) for t in texts], dtype="float32")
+
 
 def _get_index():
     global _index, _chunk_store
@@ -59,11 +63,12 @@ def _get_index():
         _chunk_store = []
     return _index, _chunk_store
 
+
 def _save_index():
-    os.makedirs(os.path.dirname(FAISS_INDEX_PATH), exist_ok=True)
     faiss.write_index(_index, FAISS_INDEX_PATH)
     with open(CHUNK_STORE_PATH, "wb") as f:
         pickle.dump(_chunk_store, f)
+
 
 def embed_and_store(chunks: list, document_id: int) -> list:
     index, chunk_store = _get_index()
@@ -82,19 +87,21 @@ def embed_and_store(chunks: list, document_id: int) -> list:
     _save_index()
     return list(range(start_idx, start_idx + len(chunks)))
 
+
 def search(query: str, top_k: int = 5) -> list:
     index, chunk_store = _get_index()
     if index.ntotal == 0:
         return []
-    query_embedding = _embed_texts([query])
+    query_vec = _embed_texts([query])
     k = min(top_k, index.ntotal)
-    distances, indices = index.search(query_embedding, k)
+    distances, indices = index.search(query_vec, k)
     results = []
     for dist, idx in zip(distances[0], indices[0]):
         if idx == -1:
             continue
         results.append({**chunk_store[idx], "score": float(1 / (1 + dist))})
     return results
+
 
 def delete_document_vectors(document_id: int):
     global _index, _chunk_store
