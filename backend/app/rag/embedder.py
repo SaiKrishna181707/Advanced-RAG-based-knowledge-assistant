@@ -1,6 +1,7 @@
 import os
 import pickle
 import time
+from urllib import response
 import numpy as np
 import faiss
 
@@ -20,7 +21,7 @@ def _get_cohere():
         api_key = os.getenv("COHERE_API_KEY")
         if not api_key:
             raise ValueError("COHERE_API_KEY not set in environment")
-        _cohere_client = cohere.ClientV2(api_key=api_key)
+        _cohere_client = cohere.Client(api_key=api_key)
     return _cohere_client
 
 
@@ -40,11 +41,10 @@ def _embed_texts(texts: list, input_type: str = "search_document") -> np.ndarray
             try:
                 response = client.embed(
                     texts=batch,
-                    model="embed-english-v3.0",
+                    model="embed-english-light-v3.0",
                     input_type=input_type,
-                    embedding_types=["float"],
                 )
-                all_embeddings.extend(response.embeddings.float)
+                all_embeddings.extend(response.embeddings)
                 break
             except Exception as e:
                 if attempt == 2:
