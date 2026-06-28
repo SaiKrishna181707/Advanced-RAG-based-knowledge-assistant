@@ -40,10 +40,6 @@ def _get_client() -> Groq:
 
 
 def build_prompt(query: str, chunks: list[dict]) -> str:
-    """
-    Constructs the prompt sent to the LLM.
-    The format matters a lot — clear instructions = better answers.
-    """
     if not chunks:
         context_text = "No relevant documents found."
     else:
@@ -52,25 +48,23 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
             doc_name = os.path.basename(chunk.get("source", "Unknown"))
             page = chunk.get("page_number", "?")
             context_parts.append(
-                f"[Source {i} — {doc_name}, page {page}]\n{chunk['content']}"
+                f"[Document: {doc_name}, Page {page}]\n{chunk['content']}"
             )
         context_text = "\n\n---\n\n".join(context_parts)
 
-    return f"""You are an intelligent knowledge assistant. Answer the user's question based ONLY on the provided document context below.
+    return f"""You are a helpful knowledge assistant. Answer the user's question using ONLY the document context provided below.
 
-Rules:
-- Answer clearly and concisely based on the context.
-- Do NOT mention source numbers or citations inline in your answer. Citations are shown separately.
-- Do NOT start your answer with "Summary of the PDF" or similar phrases. Just answer directly.
-- Use markdown formatting: **bold** for key terms, bullet points for lists, code blocks for code.
-- If the context doesn't contain enough information, say: "I couldn't find relevant information in the uploaded documents for this question."
-- Do not make up information not in the context.
+STRICT RULES:
+- Answer directly without any preamble like "Summary of the PDF" or "Based on the context"
+- NEVER mention source numbers, citations, or document names in your answer text
+- Use clean markdown: **bold** for key terms, bullet points for lists
+- Be concise and factual
+- If context lacks the answer, say only: "I couldn't find relevant information in the uploaded documents for this question."
 
-DOCUMENT CONTEXT:
+CONTEXT:
 {context_text}
 
-USER QUESTION:
-{query}
+QUESTION: {query}
 
 ANSWER:"""
 
