@@ -1,107 +1,82 @@
-"""
-models/database.py  —  Database Setup
-
-We use SQLite (a simple file-based database, no server needed) via SQLAlchemy.
-SQLAlchemy lets us write Python classes instead of raw SQL.
-
-Tables:
-  - Document: one row per uploaded PDF
-  - Chunk: one row per text chunk extracted from a PDF
-  - Conversation: one row per chat session
-  - Message: one row per message in a conversation
-"""
-
 import os
 from datetime import datetime
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
-    DateTime, Float, Boolean, ForeignKey
+    DateTime, Float, ForeignKey
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 Base = declarative_base()
 
-# Engine will be set when init_db() is called
-engine = None
-SessionLocal = None
+def _get_engine():
+    db_url = os.getenv("DATABASE_URL", "sqlite:////tmp/rag_assistant.db")
+    if "sqlite:///" in db_url and "/tmp" not in db_url:
+        db_url = "sqlite:////tmp/rag_assistant.db"
+    return create_engine(db_url, connect_args={"check_same_thread": False})
 
 
 class Document(Base):
     __tablename__ = "documents"
-
     id = Column(Integer, primary_key=True)
     filename = Column(String(255), nullable=False)
     original_name = Column(String(255), nullable=False)
-    file_size = Column(Integer)                      # bytes
+    file_size = Column(Integer)
     page_count = Column(Integer)
     chunk_count = Column(Integer, default=0)
     collection = Column(String(100), default="General")
-    status = Column(String(50), default="processing") # processing | ready | error
+    status = Column(String(50), default="processing")
     created_at = Column(DateTime, default=datetime.utcnow)
-
     chunks = relationship("Chunk", back_populates="document", cascade="all, delete")
 
 
 class Chunk(Base):
     __tablename__ = "chunks"
-
     id = Column(Integer, primary_key=True)
     document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
     content = Column(Text, nullable=False)
     page_number = Column(Integer)
-    chunk_index = Column(Integer)                    # position within document
+    chunk_index = Column(Integer)
     char_count = Column(Integer)
-    faiss_index = Column(Integer)                    # position in FAISS index
+    faiss_index = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     document = relationship("Document", back_populates="chunks")
 
 
 class Conversation(Base):
     __tablename__ = "conversations"
-
     id = Column(Integer, primary_key=True)
     title = Column(String(255), default="New conversation")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
     messages = relationship("Message", back_populates="conversation", cascade="all, delete")
 
 
 class Message(Base):
     __tablename__ = "messages"
-
     id = Column(Integer, primary_key=True)
     conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
-    role = Column(String(20), nullable=False)        # "user" or "assistant"
+    role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
-    sources = Column(Text)                           # JSON string of source citations
+    sources = Column(Text)
     retrieval_time_ms = Column(Float)
     llm_time_ms = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     conversation = relationship("Conversation", back_populates="messages")
 
 
 def init_db():
-    """Called once on startup — creates all tables if they don't exist."""
-    global engine, SessionLocal
-
-    db_url = os.getenv("DATABASE_URL", "sqlite:///rag_assistant.db")
-    
-    # On Render, use /tmp for writable storage
-    if db_url == "sqlite:///rag_assistant.db":
-        db_path = "/tmp/rag_assistant.db"
-        db_url = f"sqlite:///{db_path}"
-
-    engine = create_engine(db_url, connect_args={"check_same_thread": False})
-    SessionLocal = sessionmaker(bind=engine)
+    engine = _get_engine()
     Base.metadata.create_all(engine)
-    print(f"[DB] Initialized at {db_url}")
+    print(f"[DB] Initialized")
+
+
+def SessionLocal():
+    engine = _get_engine()
+    Session = sessionmaker(bind=engine)
+    return Session()
 
 
 def get_db():
-    """Yields a database session. Used in route handlers."""
     db = SessionLocal()
     try:
         yield db
