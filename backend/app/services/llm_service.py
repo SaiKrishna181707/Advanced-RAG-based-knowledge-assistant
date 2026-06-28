@@ -45,7 +45,10 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
     else:
         context_parts = []
         for i, chunk in enumerate(chunks, 1):
-            doc_name = os.path.basename(chunk.get("source", "Unknown"))
+            source = chunk.get("source", "Unknown")
+            doc_name = os.path.basename(source)
+            if "_" in doc_name:
+                doc_name = "_".join(doc_name.split("_")[1:])
             page = chunk.get("page_number", "?")
             context_parts.append(
                 f"[Document: {doc_name}, Page {page}]\n{chunk['content']}"
@@ -99,7 +102,10 @@ def generate_answer(query: str, chunks: list[dict]) -> dict:
     sources = []
     seen = set()
     for chunk in chunks:
-        doc_name = os.path.basename(chunk.get("source", "Unknown"))
+        source = chunk.get("source", "Unknown")
+        doc_name = os.path.basename(source)
+        if "_" in doc_name:
+            doc_name = "_".join(doc_name.split("_")[1:])
         page = chunk.get("page_number", "?")
         key = f"{doc_name}_{page}"
         if key not in seen:
@@ -116,5 +122,4 @@ def generate_answer(query: str, chunks: list[dict]) -> dict:
         "sources": sources,
         "llm_time_ms": elapsed_ms,
         "model": model,
-        "chunks_used": len(chunks),
     }
