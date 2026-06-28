@@ -6,8 +6,8 @@ import numpy as np
 import faiss
 
 _BASE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-FAISS_INDEX_PATH = os.path.join(_BASE, "storage", "faiss.index")
-CHUNK_STORE_PATH = os.path.join(_BASE, "storage", "chunk_store.pkl")
+FAISS_INDEX_PATH = "/tmp/faiss.index"
+CHUNK_STORE_PATH = "/tmp/chunk_store.pkl"
 EMBEDDING_DIM = 384
 HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
 

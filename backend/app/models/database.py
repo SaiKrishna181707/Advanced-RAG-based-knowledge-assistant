@@ -88,9 +88,16 @@ def init_db():
     global engine, SessionLocal
 
     db_url = os.getenv("DATABASE_URL", "sqlite:///rag_assistant.db")
+    
+    # On Render, use /tmp for writable storage
+    if db_url == "sqlite:///rag_assistant.db":
+        db_path = "/tmp/rag_assistant.db"
+        db_url = f"sqlite:///{db_path}"
+
     engine = create_engine(db_url, connect_args={"check_same_thread": False})
     SessionLocal = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
+    print(f"[DB] Initialized at {db_url}")
 
 
 def get_db():
