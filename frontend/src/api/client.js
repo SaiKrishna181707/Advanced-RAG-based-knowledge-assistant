@@ -1,33 +1,24 @@
-/**
- * api/client.js  —  Centralised API layer
- *
- * All calls to the Flask backend go through this file.
- * If you ever change the backend URL (e.g. for production), you change it here only.
- */
-
 import axios from 'axios'
 
+const BASE_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'
+
 const api = axios.create({
-  baseURL: '/api',          // Vite proxy forwards this to http://localhost:5000/api
-  timeout: 60000,           // 60s — LLM calls can take a while
+  baseURL: BASE_URL,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ─── Chat ────────────────────────────────────────────────────
 export const chatAPI = {
   ask: (question, conversationId = null) =>
     api.post('/chat/ask', { question, conversation_id: conversationId }),
-
   getConversations: () => api.get('/chat/conversations'),
-
   getConversation: (id) => api.get(`/chat/conversations/${id}`),
-
   createConversation: (title) => api.post('/chat/conversations', { title }),
-
   deleteConversation: (id) => api.delete(`/chat/conversations/${id}`),
 }
 
-// ─── Documents ───────────────────────────────────────────────
 export const documentsAPI = {
   upload: (file, collection = 'General', onProgress) => {
     const form = new FormData()
@@ -38,24 +29,19 @@ export const documentsAPI = {
       onUploadProgress: (e) => {
         if (onProgress) onProgress(Math.round((e.loaded * 100) / e.total))
       },
-      timeout: 300000,   // 5 min for large PDFs
+      timeout: 300000,
     })
   },
-
   list: () => api.get('/documents/'),
-
   delete: (id) => api.delete(`/documents/${id}`),
-
   status: (id) => api.get(`/documents/${id}/status`),
 }
 
-// ─── Search ──────────────────────────────────────────────────
 export const searchAPI = {
   search: (query, topK = 10) =>
     api.post('/search/', { query, top_k: topK }),
 }
 
-// ─── Analytics ───────────────────────────────────────────────
 export const analyticsAPI = {
   get: () => api.get('/analytics/'),
 }
