@@ -13,7 +13,7 @@ Upload PDFs → ask questions → get answers grounded in your documents with so
 | PDF extraction | PyMuPDF + pdfplumber | Fast + table-aware |
 | Chunking | LangChain RecursiveCharacterTextSplitter | Best chunking strategy |
 | Embeddings | sentence-transformers (all-MiniLM-L6-v2) | Free, local, fast |
-| Vector store | FAISS | Same library from your CLIP project |
+| Vector store | FAISS | Same library from  CLIP project |
 | Keyword search | BM25 (rank-bm25) | Hybrid search for better retrieval |
 | LLM | Llama-3.3-70b via Groq | Free API, very fast |
 | Database | SQLite via SQLAlchemy | No server needed |
@@ -172,5 +172,3 @@ rag-assistant/
 6. Deploy
 
 ---
-
-Built by Sai Krishna | VLITS CSE 2025
