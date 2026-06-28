@@ -29,19 +29,27 @@ function CopyButton({ text }) {
 }
 
 function SourceCard({ source }) {
+  const [expanded, setExpanded] = useState(false)
   return (
-    <div className="flex items-start gap-2.5 bg-bg-hover border border-bg-border rounded-lg px-3 py-2.5">
-      <FileText size={14} className="text-accent-purpleLight mt-0.5 flex-shrink-0" />
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-text-primary truncate">{source.document}</p>
-        <p className="text-xs text-text-muted">Page {source.page}</p>
-        {source.snippet && (
-          <p className="text-xs text-text-secondary mt-1 line-clamp-2">{source.snippet}</p>
-        )}
+    <div
+      onClick={() => setExpanded(!expanded)}
+      className="flex flex-col gap-1.5 bg-bg-hover border border-bg-border rounded-lg px-3 py-2.5 cursor-pointer hover:border-accent-purple/40 transition-colors"
+    >
+      <div className="flex items-center gap-2.5">
+        <FileText size={14} className="text-accent-purpleLight flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-text-primary truncate">{source.document}</p>
+          <p className="text-xs text-text-muted">Page {source.page}</p>
+        </div>
+        <span className="text-xs text-accent-purpleLight ml-auto flex-shrink-0 bg-accent-purpleDim px-1.5 py-0.5 rounded">
+          {Math.round(source.score * 100)}% match
+        </span>
       </div>
-      <span className="text-xs text-accent-purpleLight ml-auto flex-shrink-0">
-        {Math.round(source.score * 100)}%
-      </span>
+      {expanded && source.snippet && (
+        <p className="text-xs text-text-secondary mt-1 border-t border-bg-border pt-2 leading-relaxed">
+          {source.snippet}
+        </p>
+      )}
     </div>
   )
 }
@@ -103,12 +111,14 @@ export default function MessageBubble({ message }) {
           {/* Timing info */}
           {message.retrieval_time_ms && (
             <div className="flex items-center gap-3 mt-3 pt-3 border-t border-bg-border">
-              <Clock size={12} className="text-text-muted" />
-              <span className="text-xs text-text-muted">
-                Retrieved in {message.retrieval_time_ms}ms · Generated in {message.llm_time_ms}ms
-              </span>
-              <CopyButton text={message.content} />
-            </div>
+            <Clock size={12} className="text-text-muted" />
+            <span className="text-xs text-text-muted">
+              {message.retrieval_time_ms
+                ? `Retrieved in ${message.retrieval_time_ms}ms · Generated in ${message.llm_time_ms}ms`
+                : 'Generated'}
+            </span>
+            <CopyButton text={message.content} />
+          </div>
           )}
         </div>
 
