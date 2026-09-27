@@ -1,17 +1,13 @@
 /**
  * Public product landing page.
  *
- * Route: /
- * A signed-in visitor is redirected to the dashboard by LandingGate in App.jsx,
- * so this page is only ever shown to visitors.
- *
- * Deliberately short: hero and product preview, four claims, the workflow,
- * pricing, one closing call to action. Nothing else. Every surface below the
- * hero has to earn its height.
+ * Keep the page short: hero and product preview, a concise proof strip,
+ * four product claims, the workflow, pricing and one closing CTA.
  */
 import { useEffect } from 'react'
 import LandingNav from '../components/landing/LandingNav'
 import Hero from '../components/landing/Hero'
+import LogoCarousel from '../components/landing/LogoCarousel'
 import Benefits from '../components/landing/Benefits'
 import Workflow from '../components/landing/Workflow'
 import Pricing from '../components/landing/Pricing'
@@ -29,15 +25,23 @@ export default function LandingPage() {
       <LandingNav />
       <main>
         <Hero />
+
+        <Reveal>
+          <LogoCarousel />
+        </Reveal>
+
         <Reveal>
           <Benefits />
         </Reveal>
+
         <Reveal delay={0.05}>
           <Workflow />
         </Reveal>
+
         <Reveal delay={0.05}>
           <Pricing />
         </Reveal>
+
         <Reveal>
           <FinalCta />
         </Reveal>
