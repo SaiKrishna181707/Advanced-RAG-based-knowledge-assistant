@@ -1,174 +1,97 @@
 # Advanced RAG-Based Knowledge Assistant
 
 An AI-powered document Q&A system built with Flask, React, FAISS, and Groq.
-Upload PDFs → ask questions → get answers grounded in your documents with source citations.
 
----
+Upload PDFs → ask questions → get grounded answers from your documents with source metadata.
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Backend | Flask (Python) | Lightweight, you already know it |
-| PDF extraction | PyMuPDF + pdfplumber | Fast + table-aware |
-| Chunking | LangChain RecursiveCharacterTextSplitter | Best chunking strategy |
-| Embeddings | sentence-transformers (all-MiniLM-L6-v2) | Free, local, fast |
-| Vector store | FAISS | Same library from  CLIP project |
-| Keyword search | BM25 (rank-bm25) | Hybrid search for better retrieval |
-| LLM | Llama-3.3-70b via Groq | Free API, very fast |
-| Database | SQLite via SQLAlchemy | No server needed |
-| Frontend | React 18 + Vite + Tailwind CSS | Modern, fast |
-| State | Zustand | Simpler than Redux |
-| Deployment | Render (backend) + Vercel (frontend) | Free tier |
+| Layer | Technology | Purpose |
+|---|---|---|
+| Backend | Flask | REST API and application server |
+| PDF extraction | pdfplumber | Text + table extraction |
+| Chunking | Custom recursive chunker | Page-aware overlapping chunks |
+| Embeddings | Local feature hashing | Lightweight, offline 512-dimensional vectors |
+| Vector store | FAISS IndexFlatIP | Fast local vector search |
+| Keyword search | BM25 | Exact term matching |
+| Retrieval | Hybrid BM25 + dense + RRF | Combines lexical and vector rankings |
+| LLM | Llama-3.3-70B via Groq | Grounded response generation |
+| Database | SQLite + SQLAlchemy | Document and conversation metadata |
+| Frontend | React 18 + Vite + Tailwind CSS | Web UI |
+| Deployment | Render + Vercel | Production hosting |
 
----
+## Local Setup
 
-## Local Setup (Windows)
+### Backend
 
-### Step 1 — Get a Groq API key (free)
-1. Go to https://console.groq.com
-2. Sign up (Google login works)
-3. Go to "API Keys" → "Create API Key"
-4. Copy the key — you'll use it in Step 3
-
-### Step 2 — Backend setup
-
-```cmd
+```bash
 cd backend
-
-# Create a virtual environment (Python 3.11 recommended)
 python -m venv venv
-
-# Activate it (Windows)
+# Windows
 venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-```
-
-### Step 3 — Configure environment
-
-```cmd
-# Copy the example env file
 copy .env.example .env
-```
-
-Open `.env` in any text editor and replace:
-```
-GROQ_API_KEY=your_groq_api_key_here
-```
-with your actual key from Step 1.
-
-### Step 4 — Run the backend
-
-```cmd
 python run.py
 ```
 
-You should see:
-```
-Starting RAG Assistant backend...
-API available at: http://localhost:5000
-```
+Health check: `http://localhost:5000/api/health`
 
-Test it: open http://localhost:5000/api/health in your browser.
-You should see: `{"status": "ok", "message": "RAG Assistant is running"}`
+### Frontend
 
-### Step 5 — Frontend setup (new terminal)
-
-```cmd
+```bash
 cd frontend
-
-# Install Node dependencies
 npm install
-
-# Start dev server
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+The Vite development server runs on `http://localhost:5173`.
 
----
+## API
 
-## Project Structure
-
-```
-rag-assistant/
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py          # Flask app factory
-│   │   ├── rag/
-│   │   │   ├── extractor.py     # PDF → text
-│   │   │   ├── chunker.py       # text → chunks
-│   │   │   ├── embedder.py      # chunks → vectors + FAISS
-│   │   │   └── retriever.py     # hybrid search (dense + BM25)
-│   │   ├── routes/
-│   │   │   ├── chat.py          # /api/chat/*
-│   │   │   ├── documents.py     # /api/documents/*
-│   │   │   ├── search.py        # /api/search/
-│   │   │   └── analytics.py     # /api/analytics/
-│   │   ├── models/
-│   │   │   └── database.py      # SQLAlchemy models + SQLite init
-│   │   └── services/
-│   │       └── llm_service.py   # Groq API calls + prompt builder
-│   ├── uploads/                 # Uploaded PDFs stored here
-│   ├── storage/                 # FAISS index + chunk store
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── run.py
-│
-├── frontend/
-│   └── src/
-│       ├── api/client.js        # All API calls (axios)
-│       ├── store/index.js       # Global state (Zustand)
-│       ├── components/
-│       │   ├── layout/          # Sidebar, Topbar
-│       │   ├── chat/            # MessageBubble, ChatInput, TypingIndicator
-│       │   ├── documents/       # UploadZone
-│       │   └── ui/              # Toast
-│       ├── pages/               # ChatPage, DocumentsPage, SearchPage, etc.
-│       ├── styles/globals.css
-│       ├── App.jsx              # Router + layout
-│       └── main.jsx             # Entry point
-│
-├── render.yaml                  # Deployment config
-└── README.md
-```
-
----
-
-## API Endpoints
-
-| Method | URL | Description |
-|--------|-----|-------------|
+| Method | Endpoint | Purpose |
+|---|---|---|
 | GET | /api/health | Health check |
-| POST | /api/documents/upload | Upload a PDF |
-| GET | /api/documents/ | List all documents |
-| DELETE | /api/documents/{id} | Delete a document |
-| POST | /api/chat/ask | Ask a question |
+| POST | /api/documents/upload | Upload/process PDF |
+| GET | /api/documents/ | List documents |
+| GET | /api/documents/{id}/status | Document status |
+| DELETE | /api/documents/{id} | Delete document |
+| POST | /api/chat/ask | Ask a document-grounded question |
 | GET | /api/chat/conversations | List conversations |
-| GET | /api/chat/conversations/{id} | Get conversation messages |
-| POST | /api/search/ | Semantic search |
-| GET | /api/analytics/ | Dashboard stats |
+| GET | /api/chat/conversations/{id} | Load a conversation |
+| DELETE | /api/chat/conversations/{id} | Delete a conversation |
+| POST | /api/search/ | Hybrid document search |
+| GET | /api/analytics/ | Pipeline metrics |
 
----
+## Search behavior
 
-## Deploy to Render + Vercel
+The search endpoint and chat pipeline both use the same hybrid retrieval path:
 
-### Backend (Render)
-1. Push this repo to GitHub
-2. Go to https://render.com → New Web Service
-3. Connect your GitHub repo
-4. Set root directory: `backend`
-5. Add environment variable: `GROQ_API_KEY = your_key`
-6. Deploy
+1. BM25 ranks exact lexical matches.
+2. FAISS ranks locally hashed dense features.
+3. Reciprocal Rank Fusion combines both rankings.
+4. The top results are supplied to the Groq model.
 
-### Frontend (Vercel)
-1. Go to https://vercel.com → New Project
-2. Connect your GitHub repo
-3. Set root directory: `frontend`
-4. Add environment variable: `VITE_API_URL = https://your-render-url.onrender.com`
-5. In `frontend/vite.config.js`, update proxy target to your Render URL
-6. Deploy
+## Deployment
 
----
+For Render, add the required secrets/environment values in the dashboard:
+
+- `GROQ_API_KEY`
+- `CORS_ORIGINS` — comma-separated allowed frontend origins
+- `FLASK_SECRET_KEY`
+
+The committed `render.yaml` mounts persistent storage under `backend/data`, and the application stores the SQLite database, uploads, FAISS index, and chunk store under that data directory.
+
+For Vercel, set:
+
+```
+VITE_API_URL=https://your-render-service.onrender.com
+```
+
+Then redeploy the frontend.
+
+## Notes
+
+The local feature-hashing embedder is intentionally lightweight and lexical; it is not equivalent to a transformer semantic embedding model. The repository labels it accordingly.
