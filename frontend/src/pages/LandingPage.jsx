@@ -11,7 +11,7 @@ import Reveal from '../components/landing/Reveal'
 export default function LandingPage() {
   useEffect(() => { document.title = 'ALBATROSS — Your knowledge, actually searchable' }, [])
   return (
-    <div className="landing-page min-h-dvh bg-canvas text-ink">
+    <div className="landing-page albatross-landing min-h-dvh bg-canvas text-ink">
       <AnimatedTopDockHost />
       <main>
         <Reveal><LogoCarousel /></Reveal>
