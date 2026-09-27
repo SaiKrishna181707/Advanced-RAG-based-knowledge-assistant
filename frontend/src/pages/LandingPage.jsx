@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import Hero from '../components/landing/Hero'
 import LogoCarousel from '../components/landing/LogoCarousel'
 import Benefits from '../components/landing/Benefits'
 import Workflow from '../components/landing/Workflow'
@@ -15,7 +14,6 @@ export default function LandingPage() {
     <div className="landing-page min-h-dvh bg-canvas text-ink">
       <AnimatedTopDockHost />
       <main>
-        <Hero />
         <Reveal><LogoCarousel /></Reveal>
         <Reveal><Benefits /></Reveal>
         <Reveal delay={0.05}><Workflow /></Reveal>
