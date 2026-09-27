@@ -29,3 +29,18 @@ if (!window.scrollTo) {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = vi.fn()
 }
+
+// jsdom has no IntersectionObserver; framer-motion's `whileInView` (used on
+// the landing page reveal animations) needs one to mount at all. This stub
+// never fires a callback, which is fine for tests — they assert on content
+// that's already in the DOM, not on the post-intersection animated state.
+if (!window.IntersectionObserver) {
+  class IntersectionObserverStub {
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
+    takeRecords = () => []
+  }
+  window.IntersectionObserver = IntersectionObserverStub
+  global.IntersectionObserver = IntersectionObserverStub
+}

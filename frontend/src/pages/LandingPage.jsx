@@ -17,6 +17,7 @@ import Workflow from '../components/landing/Workflow'
 import Pricing from '../components/landing/Pricing'
 import FinalCta from '../components/landing/FinalCta'
 import Footer from '../components/landing/Footer'
+import Reveal from '../components/landing/Reveal'
 
 export default function LandingPage() {
   useEffect(() => {
@@ -28,10 +29,18 @@ export default function LandingPage() {
       <LandingNav />
       <main>
         <Hero />
-        <Benefits />
-        <Workflow />
-        <Pricing />
-        <FinalCta />
+        <Reveal>
+          <Benefits />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Workflow />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Pricing />
+        </Reveal>
+        <Reveal>
+          <FinalCta />
+        </Reveal>
       </main>
       <Footer />
     </div>

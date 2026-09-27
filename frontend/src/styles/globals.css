@@ -111,6 +111,46 @@
   }
 }
 
+@layer utilities {
+  /* Infinite logo marquee: track is two copies of the row, so translating
+     exactly -50% hands off seamlessly to the second copy. */
+  @keyframes marquee {
+    from {
+      transform: translateX(0%);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 28s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Fades the marquee row to transparent at both edges instead of a hard
+     clip, so wordmarks don't visibly pop in/out mid-row. */
+  .marquee-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 64px,
+      black calc(100% - 64px),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 64px,
+      black calc(100% - 64px),
+      transparent 100%
+    );
+  }
+}
+
 @layer components {
   .card {
     @apply rounded-card border border-line bg-surface shadow-card;

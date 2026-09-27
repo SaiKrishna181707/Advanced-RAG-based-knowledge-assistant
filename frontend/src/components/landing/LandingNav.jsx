@@ -29,7 +29,7 @@ export default function LandingNav() {
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 sm:px-8">
         <Link to="/" aria-label="ALBATROSS home" className="rounded-input">
-          <Brand size="md" />
+          <Brand size="md" animated />
         </Link>
 
         <nav aria-label="Sections" className="ml-6 hidden flex-1 items-center gap-1 md:flex">
