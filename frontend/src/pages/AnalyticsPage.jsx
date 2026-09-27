@@ -1,6 +1,4 @@
 /**
- * pages/AnalyticsPage.jsx
- *
  * Dashboard showing system stats and retrieval performance.
  */
 
@@ -50,45 +48,24 @@ export default function AnalyticsPage() {
           <p className="text-text-muted text-sm text-center py-24">Failed to load analytics</p>
         ) : (
           <>
-            {/* Stat cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-              <StatCard icon={FileText}    label="Total Documents"  value={data.total_documents} />
-              <StatCard icon={Hash}        label="Total Chunks"     value={data.total_chunks} />
-              <StatCard icon={Layers}      label="Embeddings in Index" value={data.total_embeddings} />
-              <StatCard icon={MessageSquare} label="Conversations"  value={data.total_conversations} />
-              <StatCard icon={Zap}         label="Avg Retrieval"   value={data.avg_retrieval_time_ms + 'ms'}
-                        sub="Hybrid search time" color="text-green-400" />
-              <StatCard icon={Clock}       label="Avg LLM Response" value={data.avg_llm_time_ms + 'ms'}
-                        sub="Groq generation time" color="text-yellow-400" />
+              <StatCard icon={FileText} label="Total Documents" value={data.total_documents} />
+              <StatCard icon={Hash} label="Total Chunks" value={data.total_chunks} />
+              <StatCard icon={Layers} label="Embeddings in Index" value={data.total_embeddings} />
+              <StatCard icon={MessageSquare} label="Conversations" value={data.total_conversations} />
+              <StatCard icon={Zap} label="Avg Retrieval" value={data.avg_retrieval_time_ms + 'ms'} sub="Hybrid RRF search" color="text-green-400" />
+              <StatCard icon={Clock} label="Avg LLM Response" value={data.avg_llm_time_ms + 'ms'} sub="Groq generation time" color="text-yellow-400" />
               <StatCard icon={MessageSquare} label="Total Messages" value={data.total_messages} />
             </div>
 
-            {/* Charts */}
             {data.documents_by_collection?.length > 0 && (
               <div className="bg-bg-card border border-bg-border rounded-card p-6 mb-6">
                 <h3 className="text-sm font-medium text-text-primary mb-5">Documents by Collection</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={data.documents_by_collection} margin={{ left: -20 }}>
-                    <XAxis
-                      dataKey="collection"
-                      tick={{ fontSize: 12, fill: '#a0a0b8' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12, fill: '#a0a0b8' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: '#16161f',
-                        border: '1px solid #2a2a3a',
-                        borderRadius: '10px',
-                        fontSize: '12px',
-                        color: '#f8f8ff',
-                      }}
-                    />
+                    <XAxis dataKey="collection" tick={{ fontSize: 12, fill: '#a0a0b8' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: '#a0a0b8' }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: '#16161f', border: '1px solid #2a2a3a', borderRadius: '10px', fontSize: '12px', color: '#f8f8ff' }} />
                     <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                       {data.documents_by_collection.map((_, i) => (
                         <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -99,21 +76,20 @@ export default function AnalyticsPage() {
               </div>
             )}
 
-            {/* Performance note */}
             <div className="bg-bg-card border border-bg-border rounded-card p-5">
               <h3 className="text-sm font-medium text-text-primary mb-3">Pipeline Info</h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 {[
-                  ['Embedding model',   'all-MiniLM-L6-v2 (384d)'],
-                  ['Vector store',      'FAISS IndexFlatL2'],
-                  ['Search strategy',   'Hybrid — Dense + BM25 (RRF)'],
-                  ['LLM',               'Llama-3.3-70b via Groq'],
-                  ['Chunk size',        '500 chars / 50 overlap'],
-                  ['Top-K retrieved',   '5 chunks per query'],
+                  ['Embedding model', 'Local feature hashing (512d)'],
+                  ['Vector store', 'FAISS IndexFlatIP'],
+                  ['Search strategy', 'Hybrid — Dense + BM25 (RRF)'],
+                  ['LLM', 'Llama-3.3-70b via Groq'],
+                  ['Chunk size', '500 chars / 50 overlap'],
+                  ['Top-K retrieved', '5 chunks per query'],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between bg-bg-hover rounded-lg px-3 py-2">
+                  <div key={k} className="flex justify-between gap-3 bg-bg-hover rounded-lg px-3 py-2">
                     <span className="text-text-muted">{k}</span>
-                    <span className="text-text-primary font-medium">{v}</span>
+                    <span className="text-text-primary font-medium text-right">{v}</span>
                   </div>
                 ))}
               </div>
