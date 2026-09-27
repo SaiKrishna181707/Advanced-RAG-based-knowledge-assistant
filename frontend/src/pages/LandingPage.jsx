@@ -13,6 +13,7 @@ import Pricing from '../components/landing/Pricing'
 import FinalCta from '../components/landing/FinalCta'
 import Footer from '../components/landing/Footer'
 import Reveal from '../components/landing/Reveal'
+import LogoCarousel from '../components/landing/LogoCarousel'
 
 export default function LandingPage() {
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function LandingPage() {
       <LandingNav />
       <main className="flex-1">
         <Hero />
+        <LogoCarousel />
         <Reveal delay={0.05}><Benefits /></Reveal>
         <Reveal delay={0.05}><Workflow /></Reveal>
         <Reveal delay={0.05}><Pricing /></Reveal>

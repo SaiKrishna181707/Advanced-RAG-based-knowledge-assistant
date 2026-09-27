@@ -29,8 +29,8 @@ export default function Workflow() {
 
       <ol className="mt-16 grid gap-10 sm:grid-cols-3">
         {STEPS.map((step) => (
-          <li key={step.n} className="border-t border-line pt-6">
-            <span className="font-mono text-xs font-semibold tracking-widest text-accent">
+          <li key={step.n} className="group relative border-t border-line pt-6 transition-all hover:border-accent">
+            <span className="font-mono text-xs font-semibold tracking-widest text-accent transition-transform group-hover:translate-x-1 inline-block">
               {step.n}
             </span>
             <h3 className="mt-4 text-base font-semibold tracking-tight text-ink">

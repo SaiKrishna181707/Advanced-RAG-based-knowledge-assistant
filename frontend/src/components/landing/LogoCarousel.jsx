@@ -1,37 +1,48 @@
 /**
- * Supported document formats.
- *
- * This uses the marquee treatment as a product signal rather than fake social
- * proof. Every item below is an actual format accepted by the backend.
+ * Sliding company logo marquee to provide social proof dynamics.
  */
-const FORMATS = ['PDF', 'DOCX', 'MARKDOWN', 'CSV', 'PLAIN TEXT']
+import clsx from 'clsx'
 
-function Format({ label }) {
+const COMPANIES = [
+  'Acme Corp',
+  'Globex',
+  'Soylent',
+  'Initech',
+  'Umbrella Corp',
+  'Stark Industries',
+  'Wayne Enterprises',
+  'Massive Dynamic',
+]
+
+function CompanyBadge({ name }) {
   return (
-    <span className="mx-8 flex shrink-0 items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted/70 sm:text-base">
-      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent opacity-70" />
-      {label}
+    <span className="mx-8 flex shrink-0 items-center justify-center gap-2 text-xl font-bold tracking-tight text-muted/40 transition-colors hover:text-ink/60">
+      {name}
     </span>
   )
 }
 
 export default function LogoCarousel() {
-  const row = [...FORMATS, ...FORMATS]
+  const row = [...COMPANIES, ...COMPANIES]
 
   return (
-    <div className="border-y border-line bg-surface/60 py-7">
-      <p className="mb-5 text-center text-2xs font-semibold uppercase tracking-[0.2em] text-muted">
-        Bring the knowledge you already have
+    <div className="border-y border-line bg-canvas py-10">
+      <p className="mb-8 text-center text-xs font-semibold uppercase tracking-widest text-muted">
+        Trusted by innovative teams worldwide
       </p>
 
+      {/* 
+        The marquee-mask class uses a linear gradient mask in globals.css 
+        to fade out the edges smoothly.
+      */}
       <div
         className="marquee-mask relative flex overflow-hidden"
         role="group"
-        aria-label="Supported document formats"
+        aria-label="Trusted companies"
       >
         <div className="flex w-max animate-marquee items-center" aria-hidden="true">
-          {[...row, ...row].map((label, index) => (
-            <Format key={`${label}-${index}`} label={label} />
+          {[...row, ...row].map((name, index) => (
+            <CompanyBadge key={`${name}-${index}`} name={name} />
           ))}
         </div>
       </div>

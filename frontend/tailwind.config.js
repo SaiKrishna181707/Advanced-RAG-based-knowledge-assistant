@@ -5,8 +5,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Semantic tokens backed by CSS variables so light and dark themes swap
-        // without duplicating every utility class.
         canvas: 'rgb(var(--canvas) / <alpha-value>)',
         surface: 'rgb(var(--surface) / <alpha-value>)',
         raised: 'rgb(var(--raised) / <alpha-value>)',
@@ -48,6 +46,7 @@ export default {
         'slide-in-right': 'slideInRight 0.24s cubic-bezier(0.22, 1, 0.36, 1)',
         shimmer: 'shimmer 1.6s ease-in-out infinite',
         caret: 'caret 1.1s steps(1, end) infinite',
+        marquee: 'marquee 30s linear infinite',
       },
       keyframes: {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
@@ -66,6 +65,10 @@ export default {
         caret: {
           '0%, 45%': { opacity: '1' },
           '50%, 100%': { opacity: '0' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },

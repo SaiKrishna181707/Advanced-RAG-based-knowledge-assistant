@@ -95,9 +95,9 @@ export default function Pricing() {
             <div
               key={plan.key}
               className={clsx(
-                'flex flex-col p-8',
+                'group flex flex-col p-8 transition-colors hover:bg-raised/50',
                 index > 0 && 'border-t border-line lg:border-l lg:border-t-0',
-                plan.highlighted && 'bg-accent/5'
+                plan.highlighted && 'bg-accent/5 hover:bg-accent/10'
               )}
             >
               <div className="flex items-center gap-3">

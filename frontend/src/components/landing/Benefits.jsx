@@ -34,8 +34,8 @@ export default function Benefits() {
 
         <div className="grid gap-8 sm:grid-cols-2 sm:gap-10">
           {BENEFITS.map((benefit) => (
-            <div key={benefit.title} className="border-t border-line pt-5">
-              <h3 className="text-base font-semibold tracking-tight text-ink">
+            <div key={benefit.title} className="group rounded-2xl border border-transparent p-5 transition-all hover:border-line hover:bg-surface hover:shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-ink transition-colors group-hover:text-accent">
                 {benefit.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">

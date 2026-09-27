@@ -1,60 +1,38 @@
 /**
- * ALBATROSS identity: an abstract wing sweeping over a horizon line.
- * Deliberately restrained — a navigation mark, not a mascot.
+ * ALBATROSS identity: an animated flying albatross outline.
  *
- * `animated` opts a single instance into a one-time draw-in on mount (used
- * on the landing hero/nav). Every other usage stays the plain static mark.
+ * `animated` opts into a continuous gentle flying/flapping motion.
  */
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 
-const WING_PATH =
-  'M3.6 19.4c4.6-4.9 10.1-7.2 16.3-6.9 2.6.12 5.1.75 7.5 1.9-2.2 4.7-5.9 7.3-11 7.7-4.6.36-9.1-.63-12.8-2.7Z'
-const HORIZON_PATH = 'M4 25.6h24'
+// A simple but elegant bird outline (wings up)
+const WING_UP = 'M16,10 C10,4 2,6 1,12 C5,8 12,14 16,18 C20,14 27,8 31,12 C30,6 22,4 16,10 Z'
+// Wings down (same number of nodes for smooth interpolation)
+const WING_DOWN = 'M16,14 C10,22 2,20 1,14 C5,18 12,16 16,18 C20,16 27,18 31,14 C30,20 22,22 16,14 Z'
 
 export function BrandMark({ className, animated = false }) {
   if (!animated) {
     return (
       <svg viewBox="0 0 32 32" aria-hidden="true" className={className} fill="none">
-        <circle cx="16" cy="16" r="15" className="fill-current opacity-[0.10]" />
-        <path d={WING_PATH} className="fill-current" />
-        <path
-          d={HORIZON_PATH}
-          className="stroke-current"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
+        <path d={WING_UP} className="fill-current" />
       </svg>
     )
   }
 
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true" className={className} fill="none">
-      <motion.circle
-        cx="16"
-        cy="16"
-        r="15"
-        className="fill-current opacity-[0.10]"
-        initial={{ scale: 0.6, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      />
       <motion.path
-        d={WING_PATH}
         className="fill-current"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 0.9, ease: 'easeOut' }}
-      />
-      <motion.path
-        d={HORIZON_PATH}
-        className="stroke-current"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.5 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+        animate={{
+          d: [WING_UP, WING_DOWN, WING_UP],
+          y: [0, -2, 0]
+        }}
+        transition={{
+          duration: 3,
+          ease: "easeInOut",
+          repeat: Infinity,
+        }}
       />
     </svg>
   )
