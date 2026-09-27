@@ -173,7 +173,8 @@ an LRU bound of 8 users. It is rebuilt only when chunks are added or removed.
 - Answer feedback (helpful / not helpful, with an optional comment).
 
 ### Experience
-- Landing page, authentication, protected routes and a dashboard shell.
+- Landing page with an interactive product preview, authentication, protected
+  routes and a dashboard shell.
 - Light / dark / system theme with an accessible, consistent design system.
 - Markdown answers with tables, code highlighting and math rendering.
 - Responsive layout with an overlay sidebar on small screens.
@@ -448,7 +449,8 @@ albatross/
 │   │   ├── lib/                   # citations, formatting, helpers
 │   │   ├── store/                 # Zustand: auth, chat, ui, theme
 │   │   ├── components/
-│   │   │   ├── landing/           # hero, steps, capabilities, pricing, faq
+│   │   │   ├── landing/           # hero, product preview, benefits, workflow,
+│   │   │   │                      # pricing, closing CTA, footer
 │   │   │   ├── auth/              # sign-in / sign-up forms
 │   │   │   ├── layout/            # AppLayout, Sidebar, Topbar, Brand
 │   │   │   ├── chat/              # MessageBubble, ChatInput, ScopeSelector,
@@ -862,15 +864,18 @@ retrieval (fusion ordering, metadata filtering, dedup), chat (grounding,
 citations, incomplete-scope notice, follow-ups) and the plan catalogue. No test
 asserts trivial behaviour.
 
-**Frontend** - `vitest` + Testing Library, 78 tests:
+**Frontend** - `vitest` + Testing Library, 81 tests:
 
 ```bash
 cd frontend
 npm test
 ```
 
-Coverage includes the landing page (hero, six steps, pricing, FAQ, fallback when
-the plan fetch fails), routing and protected routes (an anonymous visitor cannot
+Coverage includes the landing page (the positioning statement, both calls to
+action, the interactive product preview including its keyboard tab behaviour,
+the three-step workflow, the plan catalogue, the fallback when the plan fetch
+fails, every in-page anchor resolving to a real section, and a guard that the
+page stays short), routing and protected routes (an anonymous visitor cannot
 reach any `/app/*` route, a signed-in user is bounced away from `/login`), the
 API contract layer (envelope unwrapping, error classification, `401` handling,
 single-flight token refresh and replay, refusing to treat a failed login as an
@@ -916,7 +921,7 @@ data, and exits non-zero if any check fails.
 
 | Surface | Description |
 |---------|-------------|
-| Landing page | Hero, "how it works" and the pricing table |
+| Landing page | Hero, interactive product preview, benefits, workflow and pricing |
 | Dashboard | Counts, recent documents, recent conversations, quick actions |
 | Upload | Drag-and-drop with per-file processing states |
 | Chat | Streamed answer with inline citations and the source panel |

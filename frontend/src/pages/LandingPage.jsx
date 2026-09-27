@@ -2,24 +2,24 @@
  * Public product landing page.
  *
  * Route: /
- * A signed-in visitor is redirected to the dashboard by PublicOnlyRoute's
- * sibling behaviour in App.jsx, so this page is only ever shown to visitors.
+ * A signed-in visitor is redirected to the dashboard by LandingGate in App.jsx,
+ * so this page is only ever shown to visitors.
+ *
+ * Deliberately short: hero and product preview, four benefits, the workflow,
+ * pricing, one closing call to action. Nothing else.
  */
 import { useEffect } from 'react'
 import LandingNav from '../components/landing/LandingNav'
 import Hero from '../components/landing/Hero'
-import HowItWorks from '../components/landing/HowItWorks'
-import Capabilities from '../components/landing/Capabilities'
-import Architecture from '../components/landing/Architecture'
-import Trust from '../components/landing/Trust'
-import Insights from '../components/landing/Insights'
+import Benefits from '../components/landing/Benefits'
+import Workflow from '../components/landing/Workflow'
 import Pricing from '../components/landing/Pricing'
-import Faq, { FinalCta } from '../components/landing/Faq'
+import FinalCta from '../components/landing/FinalCta'
 import Footer from '../components/landing/Footer'
 
 export default function LandingPage() {
   useEffect(() => {
-    document.title = 'ALBATROSS — Navigate Your Knowledge'
+    document.title = 'ALBATROSS — Your knowledge, actually searchable'
   }, [])
 
   return (
@@ -27,13 +27,9 @@ export default function LandingPage() {
       <LandingNav />
       <main>
         <Hero />
-        <HowItWorks />
-        <Capabilities />
-        <Architecture />
-        <Trust />
-        <Insights />
+        <Benefits />
+        <Workflow />
         <Pricing />
-        <Faq />
         <FinalCta />
       </main>
       <Footer />

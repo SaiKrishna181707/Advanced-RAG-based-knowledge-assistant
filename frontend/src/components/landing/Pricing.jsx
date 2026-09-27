@@ -5,8 +5,9 @@
  * disagree about a limit. A local fallback keeps the section readable if the API
  * is unreachable.
  *
- * No payment provider is connected. The buttons create an account; the plan can
- * be changed from Settings. That is stated plainly rather than implied away.
+ * The highlights only ever name entitlements the server actually enforces:
+ * document, storage and question allowances, retrieval depth, file size and
+ * conversation memory. No payment provider is connected, and the page says so.
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -26,9 +27,8 @@ const FALLBACK_PLANS = [
       'Up to 25 documents',
       '100 MB of storage',
       '200 questions per month',
-      'Hybrid retrieval',
-      'Grounded answers with citations',
-      'Basic chat history',
+      'Hybrid retrieval with citations',
+      'Up to 25 MB per file',
     ],
     cta: 'Get started free',
     highlighted: false,
@@ -42,10 +42,9 @@ const FALLBACK_PLANS = [
       'Up to 1,000 documents',
       '10 GB of storage',
       '10,000 questions per month',
-      'Advanced hybrid search with filters',
-      'Full analytics and usage reporting',
-      'Priority processing queue',
-      'Extended conversation history',
+      'Deeper retrieval — 8 passages per answer',
+      'Up to 50 MB per file',
+      '6-turn conversation memory',
     ],
     cta: 'Choose Pro',
     highlighted: true,
@@ -53,18 +52,17 @@ const FALLBACK_PLANS = [
   {
     key: 'team',
     name: 'Team',
-    tagline: 'For groups building a shared knowledge space.',
+    tagline: 'For very large corpora and the deepest retrieval.',
     price_label: '$79',
     highlights: [
       'Up to 10,000 documents',
       '100 GB of storage',
       '100,000 questions per month',
-      'Shared knowledge spaces',
-      'Team members and collaborative documents',
-      'Shared conversations',
-      'Workspace analytics',
+      'Deepest retrieval — 10 passages per answer',
+      'Up to 100 MB per file',
+      '8-turn conversation memory',
     ],
-    cta: 'Talk to us',
+    cta: 'Choose Team',
     highlighted: false,
   },
 ]
@@ -91,7 +89,7 @@ export default function Pricing() {
   }, [])
 
   return (
-    <Section id="pricing" tone="surface" divider>
+    <Section id="pricing" divider>
       <SectionIntro
         eyebrow="Pricing"
         title="Start free. Move up when your knowledge base grows."
@@ -137,10 +135,7 @@ export default function Pricing() {
 
             <Link
               to="/signup"
-              className={clsx(
-                'mt-7 w-full',
-                plan.highlighted ? 'btn-primary' : 'btn-secondary',
-              )}
+              className={clsx('mt-7 w-full', plan.highlighted ? 'btn-primary' : 'btn-secondary')}
             >
               {plan.cta || `Choose ${plan.name}`}
             </Link>
@@ -154,10 +149,7 @@ export default function Pricing() {
           <span className="font-medium text-ink">Billing is not connected yet.</span>{' '}
           {billing?.note ||
             'Plans are product-level entitlements. No payment provider is wired up, so nothing is charged.'}{' '}
-          Changing plan from Settings adjusts your limits immediately and takes no payment. The
-          account model already carries the plan, subscription status and billing customer fields a
-          provider such as Stripe needs, so adding checkout later is an additive change rather than
-          a rebuild.
+          Changing plan from Settings updates your limits immediately and takes no payment.
         </p>
       </div>
     </Section>

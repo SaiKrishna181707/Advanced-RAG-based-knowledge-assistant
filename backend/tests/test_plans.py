@@ -30,6 +30,12 @@ def test_plan_catalogue_is_public_and_consistent(client):
     assert all(plan["highlights"] for plan in data["plans"])
     assert sum(1 for plan in data["plans"] if plan["highlighted"]) == 1
 
+    # Highlights may only name entitlements the server enforces. Collaboration
+    # and queueing features are not implemented, so they must not be sold.
+    advertised = " ".join(h for plan in data["plans"] for h in plan["highlights"]).lower()
+    for unimplemented in ("priority", "queue", "shared", "team member", "collaborat", "workspace"):
+        assert unimplemented not in advertised
+
     assert data["billing"]["provider"] is None
     assert "No payment provider" in data["billing"]["note"]
 

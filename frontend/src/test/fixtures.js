@@ -1,4 +1,10 @@
-/** Shared fixtures for the frontend tests. */
+/**
+ * Shared fixtures for the frontend tests.
+ *
+ * PLAN_CATALOGUE mirrors GET /api/plans so the landing test renders the shape
+ * the server really serves. The backend owns these values - keep them in sync
+ * when plan copy changes.
+ */
 
 export const USER = {
   id: 'u1',
@@ -45,11 +51,17 @@ export const PLAN_CATALOGUE = {
     {
       key: 'free',
       name: 'Free',
-      tagline: 'Start navigating.',
+      tagline: 'For trying ALBATROSS on a personal document set.',
       price_monthly: 0,
-      price_label: 'Free',
-      highlights: ['25 documents', '200 questions a month'],
-      cta: 'Get started',
+      price_label: '$0',
+      highlights: [
+        'Up to 25 documents',
+        '100 MB of storage',
+        '200 questions per month',
+        'Hybrid retrieval with citations',
+        'Up to 25 MB per file',
+      ],
+      cta: 'Get started free',
       highlighted: false,
       document_limit: 25,
       storage_limit_bytes: 104857600,
@@ -61,11 +73,18 @@ export const PLAN_CATALOGUE = {
     {
       key: 'pro',
       name: 'Pro',
-      tagline: 'For heavy research.',
+      tagline: 'For working out of a large personal knowledge base.',
       price_monthly: 19,
       price_label: '$19',
-      highlights: ['1,000 documents', '10,000 questions a month'],
-      cta: 'Upgrade to Pro',
+      highlights: [
+        'Up to 1,000 documents',
+        '10 GB of storage',
+        '10,000 questions per month',
+        'Deeper retrieval — 8 passages per answer',
+        'Up to 50 MB per file',
+        '6-turn conversation memory',
+      ],
+      cta: 'Choose Pro',
       highlighted: true,
       document_limit: 1000,
       storage_limit_bytes: 10737418240,
@@ -77,11 +96,18 @@ export const PLAN_CATALOGUE = {
     {
       key: 'team',
       name: 'Team',
-      tagline: 'Shared knowledge spaces.',
-      price_monthly: 49,
-      price_label: '$49',
-      highlights: ['Shared knowledge spaces', 'Workspace analytics'],
-      cta: 'Talk to us',
+      tagline: 'For very large corpora and the deepest retrieval.',
+      price_monthly: 79,
+      price_label: '$79',
+      highlights: [
+        'Up to 10,000 documents',
+        '100 GB of storage',
+        '100,000 questions per month',
+        'Deepest retrieval — 10 passages per answer',
+        'Up to 100 MB per file',
+        '8-turn conversation memory',
+      ],
+      cta: 'Choose Team',
       highlighted: false,
       document_limit: 10000,
       storage_limit_bytes: 107374182400,

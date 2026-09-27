@@ -3,14 +3,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import Brand from '../layout/Brand'
-import { Button } from '../ui/Primitives'
 
 const LINKS = [
+  { href: '#product', label: 'Product' },
   { href: '#how-it-works', label: 'How it works' },
-  { href: '#capabilities', label: 'Capabilities' },
-  { href: '#architecture', label: 'Architecture' },
   { href: '#pricing', label: 'Pricing' },
-  { href: '#faq', label: 'FAQ' },
 ]
 
 export default function LandingNav() {
@@ -52,7 +49,7 @@ export default function LandingNav() {
             Sign in
           </Link>
           <Link to="/signup" className="btn-primary">
-            Get Started
+            Get started
           </Link>
         </div>
 
@@ -87,7 +84,7 @@ export default function LandingNav() {
               Sign in
             </Link>
             <Link to="/signup" className="btn-primary">
-              Get Started
+              Get started
             </Link>
           </div>
         </div>

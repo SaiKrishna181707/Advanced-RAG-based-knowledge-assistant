@@ -5,10 +5,14 @@ This module is the single source of truth for what each plan allows. Routes, the
 usage meter and the landing page pricing table all read from here, so a limit is
 never hardcoded in more than one place.
 
-No payment provider is wired up. ``billing_ready`` records that the fields a
-provider such as Stripe needs (plan key, subscription status, billing customer id
-on the user document) already exist, so integration is additive rather than a
-rewrite.
+No payment provider is wired up. The fields a provider such as Stripe needs
+(plan key, subscription status, billing customer id on the user document)
+already exist, so integration is additive rather than a rewrite.
+
+Highlights are restricted to entitlements the server actually enforces -
+document, storage and question allowances, retrieval depth, maximum file size
+and conversation memory - so the pricing table never sells a feature that does
+not exist yet.
 """
 from __future__ import annotations
 
@@ -67,9 +71,8 @@ PLANS: dict[str, Plan] = {
             "Up to 25 documents",
             "100 MB of storage",
             "200 questions per month",
-            "Hybrid retrieval",
-            "Grounded answers with citations",
-            "Basic chat history",
+            "Hybrid retrieval with citations",
+            "Up to 25 MB per file",
         ),
         cta="Get started free",
     ),
@@ -88,10 +91,9 @@ PLANS: dict[str, Plan] = {
             "Up to 1,000 documents",
             "10 GB of storage",
             "10,000 questions per month",
-            "Advanced hybrid search with filters",
-            "Full analytics and usage reporting",
-            "Priority processing queue",
-            "Extended conversation history",
+            "Deeper retrieval — 8 passages per answer",
+            "Up to 50 MB per file",
+            "6-turn conversation memory",
         ),
         cta="Choose Pro",
         highlighted=True,
@@ -99,7 +101,7 @@ PLANS: dict[str, Plan] = {
     "team": Plan(
         key="team",
         name="Team",
-        tagline="For groups building a shared knowledge space.",
+        tagline="For very large corpora and the deepest retrieval.",
         price_monthly=79,
         document_limit=10000,
         storage_limit_bytes=100 * GB,
@@ -111,10 +113,9 @@ PLANS: dict[str, Plan] = {
             "Up to 10,000 documents",
             "100 GB of storage",
             "100,000 questions per month",
-            "Shared knowledge spaces",
-            "Team members and collaborative documents",
-            "Shared conversations",
-            "Workspace analytics",
+            "Deepest retrieval — 10 passages per answer",
+            "Up to 100 MB per file",
+            "8-turn conversation memory",
         ),
         cta="Talk to us",
     ),

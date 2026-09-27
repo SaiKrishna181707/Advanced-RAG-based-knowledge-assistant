@@ -31,7 +31,9 @@ describe('anonymous visitors', () => {
     signOut()
     renderApp('/')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'ALBATROSS' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /actually searchable/i }),
+    ).toBeInTheDocument()
   })
 
   it('is redirected from the dashboard to the login screen', async () => {

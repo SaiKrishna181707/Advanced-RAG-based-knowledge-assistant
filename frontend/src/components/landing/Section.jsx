@@ -1,16 +1,17 @@
 /** Consistent landing-page section frame: eyebrow, heading, lede, content. */
 import clsx from 'clsx'
 
-export function Section({ id, children, className, tone = 'canvas', divider = false }) {
+export function Section({ id, children, className, tone = 'canvas', divider = false, ...rest }) {
   return (
     <section
       id={id}
       className={clsx(
-        'px-5 py-16 sm:px-8 sm:py-24',
+        'scroll-mt-16 px-5 py-16 sm:px-8 sm:py-24',
         tone === 'surface' ? 'bg-surface' : '',
         divider && 'border-t border-line',
         className,
       )}
+      {...rest}
     >
       <div className="mx-auto w-full max-w-6xl">{children}</div>
     </section>
