@@ -1,20 +1,75 @@
-import { Brain, User } from 'lucide-react'
+/** Application top bar: mobile nav trigger, page title, theme switch. */
+import { useLocation } from 'react-router-dom'
+import { Menu, Moon, Plus, Sun, SunMoon } from 'lucide-react'
+import { useEffect } from 'react'
+import { Button } from '../ui/Primitives'
+import { useStore } from '../../store'
+import { useThemeStore } from '../../store/theme'
 
-export default function Topbar({ title = 'Advanced RAG Knowledge Assistant' }) {
+const TITLES = [
+  [/^\/app\/?$/, 'Dashboard'],
+  [/^\/app\/chat/, 'Chat'],
+  [/^\/app\/documents/, 'Documents'],
+  [/^\/app\/collections/, 'Collections'],
+  [/^\/app\/search/, 'Search'],
+  [/^\/app\/analytics/, 'Analytics'],
+  [/^\/app\/settings/, 'Settings'],
+]
+
+function titleFor(pathname) {
+  const match = TITLES.find(([pattern]) => pattern.test(pathname))
+  return match ? match[1] : 'ALBATROSS'
+}
+
+const THEME_CYCLE = { system: 'light', light: 'dark', dark: 'system' }
+
+export default function Topbar({ onOpenNav }) {
+  const { pathname } = useLocation()
+  const theme = useThemeStore((state) => state.theme)
+  const setTheme = useThemeStore((state) => state.setTheme)
+  const newConversation = useStore((state) => state.newConversation)
+
+  useEffect(() => {
+    document.title = `${titleFor(pathname)} · ALBATROSS`
+  }, [pathname])
+
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : SunMoon
+  const themeLabel = `Appearance: ${theme}. Switch to ${THEME_CYCLE[theme]}.`
+
   return (
-    <header className="h-14 border-b border-bg-border bg-bg-secondary flex items-center px-6 justify-between flex-shrink-0">
-      <div className="flex items-center gap-3">
-        <h1 className="text-sm font-medium text-text-primary">{title}</h1>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-accent-purpleDim text-accent-purpleLight border border-accent-purple/30">
-          llama-3.3-70b
-        </span>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-text-muted">Powered by Groq</span>
-        <div className="w-8 h-8 rounded-full bg-bg-hover border border-bg-border flex items-center justify-center">
-          <User size={15} className="text-text-secondary" />
-        </div>
-      </div>
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-surface px-3 sm:px-4">
+      <button
+        type="button"
+        onClick={onOpenNav}
+        aria-label="Open navigation"
+        className="rounded-input p-2 text-muted transition-colors hover:bg-raised hover:text-ink lg:hidden"
+      >
+        <Menu aria-hidden="true" className="h-4 w-4" />
+      </button>
+
+      <h1 className="flex-1 truncate text-sm font-semibold text-ink">{titleFor(pathname)}</h1>
+
+      {pathname.startsWith('/app/chat') && (
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={Plus}
+          onClick={newConversation}
+          className="hidden sm:inline-flex"
+        >
+          New conversation
+        </Button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setTheme(THEME_CYCLE[theme] || 'system')}
+        aria-label={themeLabel}
+        title={themeLabel}
+        className="rounded-input p-2 text-muted transition-colors hover:bg-raised hover:text-ink"
+      >
+        <ThemeIcon aria-hidden="true" className="h-4 w-4" />
+      </button>
     </header>
   )
 }

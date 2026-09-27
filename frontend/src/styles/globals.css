@@ -2,84 +2,225 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Global resets ─── */
-*, *::before, *::after { box-sizing: border-box; }
+/* ============================================================================
+   ALBATROSS design tokens
 
-body {
-  background-color: #0a0a0f;
-  color: #f8f8ff;
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;     /* Layout handles scrolling internally */
-}
+   Two themes, one set of semantic names. Values are "R G B" triples so Tailwind
+   can apply opacity modifiers. Contrast was checked against WCAG AA: the muted
+   text token is deliberately lighter than a typical "grey on black" so body copy
+   stays readable.
+   ========================================================================= */
 
-/* ─── Scrollbar styling ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
-
-/* ─── Markdown content in chat responses ─── */
-.markdown-content h1, .markdown-content h2, .markdown-content h3 {
-  font-weight: 600;
-  margin: 1em 0 0.5em;
-  color: #f8f8ff;
-}
-.markdown-content h1 { font-size: 1.25rem; }
-.markdown-content h2 { font-size: 1.1rem; }
-.markdown-content h3 { font-size: 1rem; }
-.markdown-content p { margin: 0.5em 0; line-height: 1.7; }
-.markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin: 0.5em 0; }
-.markdown-content li { margin: 0.25em 0; }
-.markdown-content code {
-  background: #1e1e2a;
-  border: 1px solid #2a2a3a;
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85em;
-}
-.markdown-content pre {
-  background: #0d0d15;
-  border: 1px solid #2a2a3a;
-  border-radius: 10px;
-  padding: 1rem;
-  overflow-x: auto;
-  margin: 0.75em 0;
-}
-.markdown-content pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.875rem;
-}
-.markdown-content blockquote {
-  border-left: 3px solid #7c3aed;
-  padding-left: 1em;
-  margin: 0.5em 0;
-  color: #a0a0b8;
-}
-.markdown-content table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
-.markdown-content th { background: #1e1e2a; padding: 8px 12px; border: 1px solid #2a2a3a; font-weight: 500; }
-.markdown-content td { padding: 8px 12px; border: 1px solid #2a2a3a; }
-.markdown-content strong { color: #f8f8ff; font-weight: 600; }
-
-/* ─── Typing animation for AI responses ─── */
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-.typing-cursor::after {
-  content: '▋';
-  animation: blink 1s infinite;
-  color: #7c3aed;
+:root {
+  --canvas: 250 250 249;
+  --surface: 255 255 255;
+  --raised: 255 255 255;
+  --line: 226 229 235;
+  --ink: 15 23 42;
+  --muted: 88 99 120;
+  --accent: 13 125 112;
+  --accent-ink: 6 78 70;
+  --accent-fg: 255 255 255;
+  --accent-soft: 214 240 236;
+  --positive: 5 122 85;
+  --warning: 161 98 7;
+  --caution: 161 98 7;
+  --danger: 185 28 28;
+  color-scheme: light;
 }
 
-/* ─── Glass card effect ─── */
-.glass {
-  background: rgba(22, 22, 31, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(42, 42, 58, 0.8);
+.dark {
+  --canvas: 8 13 22;
+  --surface: 15 22 34;
+  --raised: 21 30 45;
+  --line: 35 47 68;
+  --ink: 232 238 246;
+  --muted: 150 165 188;
+  --accent: 45 212 191;
+  --accent-ink: 153 246 228;
+  --accent-fg: 4 30 28;
+  --accent-soft: 19 58 58;
+  --positive: 52 211 153;
+  --warning: 251 191 36;
+  --caution: 251 191 36;
+  --danger: 248 113 113;
+  color-scheme: dark;
 }
 
-/* ─── Purple glow on focus ─── */
-.focus-purple:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4);
+@layer base {
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Scrolling is opt-in per surface. The previous build locked body overflow,
+     which made every page unscrollable on small screens. */
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.28);
+  }
+
+  /* Visible, consistent focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--line));
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--muted) / 0.55);
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-line bg-surface shadow-card;
+  }
+
+  .card-interactive {
+    @apply card transition-colors hover:border-accent/40;
+  }
+
+  .label {
+    @apply block text-xs font-medium text-muted mb-1.5;
+  }
+
+  .input {
+    @apply w-full rounded-input border border-line bg-surface px-3 py-2 text-sm text-ink
+      placeholder:text-muted/70 transition-colors
+      focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-input
+      px-3.5 py-2 text-sm font-medium transition-colors
+      disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-accent-fg hover:brightness-110 active:brightness-95;
+  }
+
+  .btn-secondary {
+    @apply btn border border-line bg-surface text-ink hover:bg-raised;
+  }
+
+  .btn-ghost {
+    @apply btn text-muted hover:bg-raised hover:text-ink;
+  }
+
+  .btn-danger {
+    @apply btn border border-danger/40 text-danger hover:bg-danger/10;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line
+      bg-raised px-2.5 py-1 text-xs font-medium text-muted;
+  }
+
+  /* Layered "ocean chart" motif used behind hero and empty states. Intentionally
+     restrained: a faint grid plus one soft horizon glow. */
+  .chart-grid {
+    background-image:
+      linear-gradient(rgb(var(--line) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.5) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .horizon-glow {
+    background:
+      radial-gradient(60% 55% at 50% 0%, rgb(var(--accent) / 0.16), transparent 70%),
+      radial-gradient(40% 40% at 85% 15%, rgb(var(--accent) / 0.09), transparent 70%);
+  }
+
+  .skeleton {
+    @apply animate-shimmer rounded-md bg-line/70;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Long code blocks and wide tables must scroll rather than break the layout. */
+  .prose-albatross {
+    @apply text-sm leading-relaxed text-ink;
+  }
+  .prose-albatross h1 { @apply mt-5 mb-2 text-lg font-semibold; }
+  .prose-albatross h2 { @apply mt-5 mb-2 text-base font-semibold; }
+  .prose-albatross h3 { @apply mt-4 mb-1.5 text-sm font-semibold; }
+  .prose-albatross p { @apply my-2; }
+  .prose-albatross ul { @apply my-2 list-disc space-y-1 pl-5; }
+  .prose-albatross ol { @apply my-2 list-decimal space-y-1 pl-5; }
+  .prose-albatross li > p { @apply my-0; }
+  .prose-albatross a { @apply text-accent underline underline-offset-2; }
+  .prose-albatross strong { @apply font-semibold text-ink; }
+  .prose-albatross blockquote {
+    @apply my-3 border-l-2 border-accent/50 pl-3 text-muted;
+  }
+  .prose-albatross code {
+    @apply rounded bg-raised px-1.5 py-0.5 font-mono text-[0.8125rem];
+  }
+  .prose-albatross pre {
+    @apply my-3 overflow-x-auto rounded-input border border-line bg-raised p-3 text-[0.8125rem];
+  }
+  .prose-albatross pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose-albatross table {
+    @apply my-3 block w-full overflow-x-auto border-collapse text-sm;
+  }
+  .prose-albatross th {
+    @apply border-b border-line px-3 py-2 text-left font-semibold;
+  }
+  .prose-albatross td {
+    @apply border-b border-line/60 px-3 py-2 align-top;
+  }
+  .prose-albatross hr { @apply my-4 border-line; }
+  .prose-albatross .katex-display { @apply my-3 overflow-x-auto overflow-y-hidden; }
 }

@@ -1,62 +1,77 @@
-import os
+"""
+Text chunking.
+
+The recursive-splitter algorithm is carried over unchanged from the original
+implementation; only configuration now comes from the central settings object
+rather than reading ``os.getenv`` directly.
+"""
+from __future__ import annotations
+
+from ..config import settings
+
 
 def chunk_pages(pages: list[dict]) -> list[dict]:
-    chunk_size = int(os.getenv("CHUNK_SIZE", 500))
-    chunk_overlap = int(os.getenv("CHUNK_OVERLAP", 50))
-    all_chunks = []
+    """Split extracted pages into overlapping chunks suitable for embedding."""
+    chunk_size = settings.chunk_size
+    chunk_overlap = settings.chunk_overlap
+    min_chars = settings.min_chunk_chars
+    all_chunks: list[dict] = []
     global_index = 0
 
     for page_data in pages:
-        text = page_data["text"].strip()
+        text = (page_data.get("text") or "").strip()
         if not text:
             continue
-        raw_chunks = _split_text(text, chunk_size, chunk_overlap)
-        for raw in raw_chunks:
+        for raw in _split_text(text, chunk_size, chunk_overlap):
             cleaned = raw.strip()
-            if len(cleaned) < 30:
+            if len(cleaned) < min_chars:
                 continue
-            all_chunks.append({
-                "content": cleaned,
-                "page_number": page_data["page"],
-                "chunk_index": global_index,
-                "source": page_data["source"],
-                "char_count": len(cleaned),
-            })
+            all_chunks.append(
+                {
+                    "content": cleaned,
+                    "page_number": page_data.get("page"),
+                    "chunk_index": global_index,
+                    "char_count": len(cleaned),
+                }
+            )
             global_index += 1
     return all_chunks
 
+
 def _split_text(text: str, chunk_size: int, overlap: int) -> list[str]:
     separators = ["\n\n", "\n", ". ", " ", ""]
-    for sep in separators:
-        if sep == "":
+    for separator in separators:
+        if separator == "":
             return _hard_split(text, chunk_size, overlap)
-        parts = text.split(sep)
+        parts = text.split(separator)
         if len(parts) == 1:
             continue
-        chunks = []
+        chunks: list[str] = []
         current = ""
         for part in parts:
-            candidate = (current + sep + part).lstrip(sep) if current else part
+            candidate = (current + separator + part).lstrip(separator) if current else part
             if len(candidate) <= chunk_size:
                 current = candidate
+                continue
+            if current:
+                chunks.append(current)
+                overlap_text = current[-overlap:] if overlap else ""
+                current = (overlap_text + separator + part).lstrip() if overlap_text else part
             else:
-                if current:
-                    chunks.append(current)
-                    overlap_text = current[-overlap:] if overlap else ""
-                    current = (overlap_text + sep + part).lstrip() if overlap_text else part
-                else:
-                    sub = _split_text(part, chunk_size, overlap)
-                    chunks.extend(sub[:-1])
-                    current = sub[-1] if sub else ""
+                sub_chunks = _split_text(part, chunk_size, overlap)
+                chunks.extend(sub_chunks[:-1])
+                current = sub_chunks[-1] if sub_chunks else ""
         if current:
             chunks.append(current)
-        return [c for c in chunks if c.strip()]
+        return [chunk for chunk in chunks if chunk.strip()]
     return [text]
 
+
 def _hard_split(text: str, chunk_size: int, overlap: int) -> list[str]:
-    chunks = []
+    chunks: list[str] = []
+    step = max(1, chunk_size - overlap)
     start = 0
     while start < len(text):
-        chunks.append(text[start:start + chunk_size])
-        start += chunk_size - overlap
+        chunks.append(text[start : start + chunk_size])
+        start += step
     return chunks

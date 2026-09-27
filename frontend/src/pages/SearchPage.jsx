@@ -1,147 +1,374 @@
 /**
- * pages/SearchPage.jsx
- *
- * Dedicated semantic search — shows raw chunks with similarity scores.
- * Useful for debugging retrieval quality.
+ * Knowledge search: semantic, keyword or hybrid retrieval with filters.
+ * Every result shows document, location, snippet, relevance and collection.
  */
-
-import { useState } from 'react'
-import { Search, FileText, Loader2, Zap } from 'lucide-react'
-import { searchAPI } from '../api/client'
-import Topbar from '../components/layout/Topbar'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { FileText, Gauge, Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
 import clsx from 'clsx'
+import { Badge, Button, Card, SectionHeader } from '../components/ui/Primitives'
+import EmptyState from '../components/ui/EmptyState'
+import SourcePanel from '../components/SourcePanel'
+import { searchAPI } from '../api/client'
+import { useStore } from '../store'
+import { locationLabel } from '../lib/format'
 
-function ScoreBar({ score }) {
-  const pct = Math.round(score * 100)
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1 bg-bg-hover rounded-full overflow-hidden">
-        <div
-          className="h-full bg-accent-purple rounded-full transition-all"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs text-accent-purpleLight w-8 text-right">{pct}%</span>
-    </div>
-  )
+const MODES = [
+  { value: 'hybrid', label: 'Hybrid', detail: 'Semantic and keyword, fused' },
+  { value: 'semantic', label: 'Semantic', detail: 'Vector similarity' },
+  { value: 'keyword', label: 'Keyword', detail: 'BM25 term matching' },
+]
+
+function highlight(snippet, query) {
+  if (!snippet || !query) return snippet
+  const terms = query
+    .split(/\s+/)
+    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .filter((term) => term.length > 2)
+  if (!terms.length) return snippet
+  const pattern = new RegExp(`(${terms.join('|')})`, 'gi')
+  return String(snippet)
+    .split(pattern)
+    .map((part, index) =>
+      index % 2 === 1 ? (
+        <mark key={`${part}-${index}`} className="rounded bg-accent/20 px-0.5 text-ink">
+          {part}
+        </mark>
+      ) : (
+        part
+      ),
+    )
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
-  const [elapsed, setElapsed] = useState(0)
+  const [params, setParams] = useSearchParams()
+  const collections = useStore((state) => state.collections)
+  const documents = useStore((state) => state.documents)
+  const loadCollections = useStore((state) => state.loadCollections)
+  const loadDocuments = useStore((state) => state.loadDocuments)
 
-  const handleSearch = async () => {
-    if (!query.trim()) return
+  const [query, setQuery] = useState('')
+  const [mode, setMode] = useState('hybrid')
+  const [collectionId, setCollectionId] = useState(params.get('collection') || '')
+  const [documentIds, setDocumentIds] = useState([])
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [pageNumber, setPageNumber] = useState('')
+  const [topK, setTopK] = useState(10)
+  const [showFilters, setShowFilters] = useState(Boolean(params.get('collection')))
+
+  const [results, setResults] = useState(null)
+  const [meta, setMeta] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [openSource, setOpenSource] = useState(null)
+
+  useEffect(() => {
+    loadCollections()
+    loadDocuments()
+  }, [loadCollections, loadDocuments])
+
+  const readyDocuments = useMemo(
+    () => documents.filter((item) => item.status === 'ready'),
+    [documents],
+  )
+
+  const runSearch = async (event) => {
+    if (event) event.preventDefault()
+    const text = query.trim()
+    if (text.length < 2) {
+      setError('Enter at least two characters to search.')
+      return
+    }
     setLoading(true)
-    setSearched(true)
-    const t0 = Date.now()
+    setError(null)
     try {
-      const { data } = await searchAPI.search(query.trim(), 10)
-      setResults(data.results)
-      setElapsed(Date.now() - t0)
-    } catch (e) {
-      setResults([])
+      const data = await searchAPI.search({
+        query: text,
+        mode,
+        top_k: Number(topK) || 10,
+        ...(collectionId ? { collection_id: collectionId } : {}),
+        ...(documentIds.length ? { document_ids: documentIds } : {}),
+        ...(dateFrom ? { date_from: dateFrom } : {}),
+        ...(dateTo ? { date_to: dateTo } : {}),
+        ...(pageNumber ? { page_number: Number(pageNumber) } : {}),
+      })
+      setResults(data.results || [])
+      setMeta({ count: data.count, latency_ms: data.latency_ms, mode: data.mode })
+    } catch (err) {
+      setError(err.message)
+      setResults(null)
     } finally {
       setLoading(false)
     }
   }
 
+  const clearFilters = () => {
+    setCollectionId('')
+    setDocumentIds([])
+    setDateFrom('')
+    setDateTo('')
+    setPageNumber('')
+    setParams({}, { replace: true })
+  }
+
+  const filtersActive = Boolean(collectionId || documentIds.length || dateFrom || dateTo || pageNumber)
+
   return (
-    <div className="flex flex-col h-full">
-      <Topbar title="Semantic Search" />
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto">
-          {/* Search box */}
-          <div className="flex gap-3 mb-6">
-            <div className="flex-1 flex items-center gap-3 bg-bg-card border border-bg-border
-                            rounded-2xl px-4 py-3 focus-within:border-accent-purple/50 transition-colors">
-              <Search size={16} className="text-text-muted flex-shrink-0" />
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6">
+      <SectionHeader
+        title="Search"
+        description="Find the passage, not just the document. Results are the same units the assistant reads."
+      />
+
+      <Card className="p-4">
+        <form onSubmit={runSearch} className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1">
+              <SearchIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              />
+              <label htmlFor="search-query" className="sr-only">
+                Search your knowledge base
+              </label>
               <input
+                id="search-query"
+                type="search"
+                className="input pl-9"
+                placeholder="What are you looking for?"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search across all your documents…"
-                className="flex-1 bg-transparent text-sm text-text-primary placeholder-text-muted outline-none"
+                onChange={(event) => setQuery(event.target.value)}
               />
             </div>
-            <button
-              onClick={handleSearch}
-              disabled={!query.trim() || loading}
-              className="px-5 py-3 bg-accent-purple hover:bg-violet-600 disabled:opacity-50
-                         text-white text-sm rounded-2xl transition-colors flex items-center gap-2"
-            >
-              {loading ? <Loader2 size={15} className="animate-spin" /> : <Zap size={15} />}
+            <Button type="submit" variant="primary" loading={loading}>
               Search
-            </button>
+            </Button>
           </div>
 
-          {/* Results */}
-          {loading && (
-            <div className="flex justify-center py-16">
-              <Loader2 size={28} className="text-accent-purple animate-spin" />
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <fieldset className="flex flex-wrap items-center gap-1">
+              <legend className="sr-only">Search mode</legend>
+              {MODES.map((item) => (
+                <label
+                  key={item.value}
+                  title={item.detail}
+                  className={clsx(
+                    'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    mode === item.value
+                      ? 'border-accent/50 bg-accent/12 text-accent-ink'
+                      : 'border-line text-muted hover:text-ink',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="search-mode"
+                    value={item.value}
+                    checked={mode === item.value}
+                    onChange={() => setMode(item.value)}
+                    className="sr-only"
+                  />
+                  {item.label}
+                </label>
+              ))}
+            </fieldset>
 
-          {!loading && searched && results.length === 0 && (
-            <div className="text-center py-16 text-text-muted">
-              <Search size={36} className="mx-auto mb-3 opacity-20" />
-              <p className="text-sm">No relevant chunks found. Try a different query or upload more documents.</p>
-            </div>
-          )}
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={SlidersHorizontal}
+              aria-expanded={showFilters}
+              onClick={() => setShowFilters((value) => !value)}
+            >
+              Filters
+              {filtersActive && <Badge tone="accent">active</Badge>}
+            </Button>
+          </div>
 
-          {!loading && results.length > 0 && (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-text-secondary">
-                  {results.length} chunks retrieved
+          {showFilters && (
+            <div className="grid gap-3 border-t border-line pt-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label htmlFor="filter-collection" className="label">
+                  Collection
+                </label>
+                <select
+                  id="filter-collection"
+                  className="input"
+                  value={collectionId}
+                  onChange={(event) => setCollectionId(event.target.value)}
+                >
+                  <option value="">All collections</option>
+                  {collections.map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="filter-page" className="label">
+                  Page number
+                </label>
+                <input
+                  id="filter-page"
+                  type="number"
+                  min="0"
+                  className="input"
+                  value={pageNumber}
+                  onChange={(event) => setPageNumber(event.target.value)}
+                  placeholder="Any page"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="filter-from" className="label">
+                  Uploaded after
+                </label>
+                <input
+                  id="filter-from"
+                  type="date"
+                  className="input"
+                  value={dateFrom}
+                  onChange={(event) => setDateFrom(event.target.value)}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="filter-to" className="label">
+                  Uploaded before
+                </label>
+                <input
+                  id="filter-to"
+                  type="date"
+                  className="input"
+                  value={dateTo}
+                  onChange={(event) => setDateTo(event.target.value)}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="filter-documents" className="label">
+                  Limit to documents <span className="text-muted/70">(optional)</span>
+                </label>
+                <select
+                  id="filter-documents"
+                  multiple
+                  size={4}
+                  className="input h-auto"
+                  value={documentIds}
+                  onChange={(event) =>
+                    setDocumentIds(Array.from(event.target.selectedOptions).map((option) => option.value))
+                  }
+                >
+                  {readyDocuments.map((document) => (
+                    <option key={document.id} value={document.id}>
+                      {document.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-2xs text-muted">
+                  Hold Ctrl (or Cmd) to select more than one.
                 </p>
-                <span className="text-xs text-text-muted">{elapsed}ms</span>
               </div>
 
-              <div className="space-y-3">
-                {results.map((r, i) => (
-                  <div
-                    key={i}
-                    className="bg-bg-card border border-bg-border rounded-card p-5 hover:border-accent-purple/30 transition-colors"
-                  >
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <FileText size={14} className="text-accent-purpleLight" />
-                        <span className="text-xs font-medium text-text-secondary">
-                          Doc #{r.document_id} · Page {r.page_number}
-                        </span>
-                      </div>
-                      <span className="text-xs text-text-muted">Rank #{i + 1}</span>
-                    </div>
-
-                    {/* Content */}
-                    <p className="text-sm text-text-primary leading-relaxed mb-3">{r.snippet}</p>
-
-                    {/* Similarity score bar */}
-                    <div>
-                      <div className="flex justify-between text-xs text-text-muted mb-1">
-                        <span>Similarity</span>
-                      </div>
-                      <ScoreBar score={r.score} />
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <label htmlFor="filter-topk" className="label">
+                  Results
+                </label>
+                <select
+                  id="filter-topk"
+                  className="input"
+                  value={topK}
+                  onChange={(event) => setTopK(event.target.value)}
+                >
+                  {[5, 10, 15, 20, 25].map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </>
-          )}
 
-          {!searched && (
-            <div className="text-center py-20">
-              <Search size={40} className="mx-auto mb-4 text-text-muted opacity-20" />
-              <p className="text-sm text-text-muted">Type a query to search across all uploaded documents</p>
+              {filtersActive && (
+                <div className="flex items-end">
+                  <Button variant="ghost" size="sm" icon={X} onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      </div>
+        </form>
+      </Card>
+
+      {error && (
+        <p role="alert" className="rounded-card border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
+
+      {meta && !error && (
+        <p className="text-xs text-muted">
+          {meta.count} result{meta.count === 1 ? '' : 's'} · {meta.mode} retrieval ·{' '}
+          <span className="tabular-nums">{meta.latency_ms} ms</span>
+        </p>
+      )}
+
+      {results === null && !error && (
+        <EmptyState
+          icon={SearchIcon}
+          title="Search across your knowledge base"
+          description="Results are retrieved passages with their document, location and relevance — click any result to read the stored text."
+        />
+      )}
+
+      {results !== null && results.length === 0 && (
+        <EmptyState
+          icon={SearchIcon}
+          title="No passages matched"
+          description="Try different words, switch to keyword mode, or widen the filters."
+        />
+      )}
+
+      {results && results.length > 0 && (
+        <ol className="space-y-3">
+          {results.map((result) => (
+            <li key={result.chunk_id}>
+              <Card interactive className="w-full p-4 text-left">
+                <button
+                  type="button"
+                  onClick={() => setOpenSource(result)}
+                  className="w-full text-left"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-ink">
+                      <FileText aria-hidden="true" className="h-3.5 w-3.5 text-muted" />
+                      {result.document_name}
+                    </span>
+                    {locationLabel('page', result.page_number) && (
+                      <span className="chip">{locationLabel('page', result.page_number)}</span>
+                    )}
+                    {result.collection_name && <span className="chip">{result.collection_name}</span>}
+                    <span className="ml-auto flex items-center gap-1.5 text-2xs text-muted">
+                      <Gauge aria-hidden="true" className="h-3 w-3" />
+                      <span className="tabular-nums">
+                        relevance {typeof result.relevance === 'number' ? result.relevance.toFixed(2) : '—'}
+                      </span>
+                    </span>
+                  </div>
+
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted">
+                    {highlight(result.snippet || result.content, query)}
+                  </p>
+                </button>
+              </Card>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <SourcePanel open={Boolean(openSource)} source={openSource} onClose={() => setOpenSource(null)} />
     </div>
   )
 }

@@ -1,21 +1,77 @@
-# render.yaml  —  Tells Render how to deploy the backend
-# Commit this file to GitHub. Render reads it automatically.
+# render.yaml - Render blueprint for the ALBATROSS API.
+#
+# Architecture: frontend on Vercel, API on Render, data on MongoDB Atlas,
+# LLM on Groq. Only uploaded files need local disk; document metadata, chunks,
+# conversations and analytics all live in MongoDB, and the vector index is
+# rebuilt from MongoDB on demand, so a lost disk degrades nothing except the
+# ability to re-serve the original file.
 
 services:
   - type: web
-    name: rag-assistant-backend
+    name: albatross-backend
     runtime: python
+    plan: starter
     rootDir: backend
+    healthCheckPath: /api/health
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT --timeout 120
+    startCommand: gunicorn "app:create_app()" --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 180
     envVars:
-      - key: GROQ_API_KEY
-        sync: false          # You'll paste this in Render dashboard (never in code)
-      - key: FLASK_ENV
+      # --- Runtime ---
+      - key: APP_ENV
         value: production
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PROCESSING_MODE
+        value: background
+
+      # --- Secrets: set these in the Render dashboard, never in git ---
       - key: FLASK_SECRET_KEY
-        generateValue: true  # Render auto-generates a secure random value
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+
+      # --- MongoDB Atlas ---
+      # mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: albatross
+
+      # --- LLM ---
+      # A key without access to this model falls back automatically through
+      # GROQ_MODEL_PREFERENCE; /api/health reports the model actually in use.
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: LLM_MAX_TOKENS
+        value: "2048"
+      - key: LLM_REASONING_EFFORT
+        value: low
+
+      # --- Embeddings ---
+      - key: EMBEDDING_PROVIDER
+        value: hashing
+      - key: EMBEDDING_DIM
+        value: "1024"
+
+      # --- CORS: the deployed Vercel origin(s), comma separated ---
+      - key: CORS_ORIGINS
+        sync: false
+
+      # --- Uploads ---
+      - key: UPLOAD_FOLDER
+        value: uploads
+      - key: MAX_FILE_SIZE_MB
+        value: "50"
+
+      - key: LOG_LEVEL
+        value: INFO
+
+    # Uploaded files are the only data that needs to survive a restart.
+    # Render disks require a paid instance type; on the free tier drop this
+    # block and uploads are simply re-uploaded when the instance cycles.
     disk:
-      name: rag-storage
-      mountPath: /opt/render/project/src/backend
-      sizeGB: 1              # Stores FAISS index + SQLite + uploads
+      name: albatross-uploads
+      mountPath: /opt/render/project/src/backend/uploads
+      sizeGB: 1

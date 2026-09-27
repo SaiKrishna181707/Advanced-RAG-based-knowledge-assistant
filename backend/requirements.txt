@@ -1,12 +1,48 @@
-flask==3.0.3
-flask-cors==4.0.1
-python-dotenv==1.0.1
-werkzeug==3.0.3
-gunicorn==22.0.0
-pdfplumber==0.11.1
+# ALBATROSS backend dependencies.
+#
+# Pins match the environment the application was verified in. Ranges are used
+# only where an exact pin would fail to resolve wheels on one of the two target
+# platforms (Render = Linux x86_64 / Python 3.11, local = Windows ARM64 / Python 3.12).
+
+# --- Web framework ---
+flask==3.1.3
+flask-cors==6.0.5
+python-dotenv==1.2.2
+Werkzeug==3.1.8
+gunicorn==26.0.0
+
+# --- Persistence: MongoDB is the application source of truth ---
+pymongo==4.18.2
+dnspython==2.8.0
+
+# --- Authentication: HS256 JWTs; password hashing uses stdlib scrypt via Werkzeug ---
+PyJWT==2.15.0
+
+# --- Retrieval ---
+numpy>=1.26,<3
 rank-bm25==0.2.2
-faiss-cpu==1.14.3
-numpy==1.26.4
-groq==0.11.0
-sqlalchemy==2.0.31
-requests==2.31.0
+# faiss-cpu publishes py3-none-any wheels from 1.11 onward. The previous pin
+# (faiss-cpu==1.14.3) does not exist on PyPI, which is why the Render build could
+# not be reproduced from this repository. The app also runs without FAISS using
+# the NumPy backend, so this stays a soft dependency.
+faiss-cpu>=1.11,<2
+
+# --- Document extraction ---
+pdfplumber==0.11.10
+python-docx==1.2.0
+# pdfplumber -> pdfminer.six pulls cryptography. Versions >=47 require a Rust
+# toolchain to build on Windows ARM64, so the range is capped for local setups.
+cryptography>=41,<47
+
+# --- LLM provider ---
+groq==0.37.1
+httpx==0.28.1
+
+# --- Tests ---
+pytest==9.1.1
+
+# --- Optional: real sentence-transformer embeddings ---
+# Not installed by default. It pulls in torch, which has no Windows ARM64 wheel
+# and does not fit Render's 512 MB free instance. Enable by installing it
+# separately and setting EMBEDDING_PROVIDER=sentence_transformers.
+# sentence-transformers==3.0.1

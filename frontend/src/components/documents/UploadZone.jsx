@@ -1,122 +1,107 @@
 /**
- * components/documents/UploadZone.jsx
+ * Multi-format upload dropzone.
  *
- * Drag-and-drop PDF upload area.
- * Uses react-dropzone for drag handling.
+ * Only the extensions the backend can actually extract are accepted. A rejected
+ * file, an oversized file and a duplicate are all reported with the server's own
+ * message, so the user sees the same wording the API produced.
  */
-
+import { useCallback, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, FileText, Loader2, X } from 'lucide-react'
-import { useState } from 'react'
-import { useStore } from '../../store'
+import { CloudUpload, FileUp, Info } from 'lucide-react'
 import clsx from 'clsx'
+import { Button } from '../ui/Primitives'
+import { useStore } from '../../store'
 
-export default function UploadZone({ onClose }) {
-  const [collection, setCollection] = useState('General')
-  const { uploadDocument, isUploading, uploadProgress } = useStore()
+const ACCEPT = {
+  'application/pdf': ['.pdf'],
+  'text/plain': ['.txt'],
+  'text/markdown': ['.md', '.markdown'],
+  'text/csv': ['.csv'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+}
 
-  const onDrop = async (acceptedFiles) => {
-    if (!acceptedFiles.length) return
-    for (const file of acceptedFiles) {
-      try {
-        await uploadDocument(file, collection)
-      } catch (e) {
-        // error toast handled in store
+/** Highest limit across the plan catalogue; the server enforces the account's own. */
+const MAX_BYTES = 100 * 1024 * 1024
+
+export default function UploadZone({ collectionId = null, className }) {
+  const uploadDocument = useStore((state) => state.uploadDocument)
+  const addToast = useStore((state) => state.addToast)
+  const isUploading = useStore((state) => state.isUploading)
+  const [busy, setBusy] = useState(false)
+
+  const onDrop = useCallback(
+    async (accepted) => {
+      if (!accepted.length) return
+      setBusy(true)
+      for (const file of accepted) {
+        try {
+          await uploadDocument(file, { collectionId })
+        } catch {
+          /* the store already reported the reason */
+        }
       }
-    }
-    if (onClose) onClose()
-  }
+      setBusy(false)
+    },
+    [uploadDocument, collectionId],
+  )
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+  const onDropRejected = useCallback(
+    (rejections) => {
+      const [first] = rejections
+      const reason = first?.errors?.[0]
+      if (reason?.code === 'file-too-large') {
+        addToast('That file is larger than 100 MB. Upload a smaller file.', 'error')
+      } else if (reason?.code === 'file-invalid-type') {
+        addToast('That file type is not supported. Use PDF, TXT, Markdown, DOCX or CSV.', 'error')
+      } else {
+        addToast('That file could not be accepted.', 'error')
+      }
+    },
+    [addToast],
+  )
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
-    maxSize: 50 * 1024 * 1024,  // 50 MB
+    onDropRejected,
+    accept: ACCEPT,
     multiple: true,
-    disabled: isUploading,
+    maxSize: MAX_BYTES,
+    noClick: true,
+    noKeyboard: true,
   })
 
+  const hint = useMemo(
+    () => 'PDF, TXT, MD, DOCX or CSV · up to 100 MB each · duplicates are detected',
+    [],
+  )
+
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card border border-bg-border rounded-2xl p-6 w-full max-w-md animate-slide-up">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-text-primary">Upload Documents</h2>
-          {!isUploading && (
-            <button onClick={onClose} className="text-text-muted hover:text-text-primary">
-              <X size={18} />
-            </button>
-          )}
-        </div>
-
-        {/* Collection selector */}
-        <div className="mb-4">
-          <label className="text-xs text-text-muted mb-1.5 block">Collection</label>
-          <select
-            value={collection}
-            onChange={(e) => setCollection(e.target.value)}
-            className="w-full bg-bg-hover border border-bg-border rounded-input px-3 py-2
-                       text-sm text-text-primary outline-none focus:border-accent-purple/50"
-            disabled={isUploading}
-          >
-            <option>General</option>
-            <option>Research Papers</option>
-            <option>DSA Notes</option>
-            <option>Machine Learning</option>
-            <option>Company Policies</option>
-          </select>
-        </div>
-
-        {/* Drop zone */}
-        <div
-          {...getRootProps()}
-          className={clsx(
-            'border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all',
-            isDragActive
-              ? 'border-accent-purple bg-accent-purpleDim'
-              : 'border-bg-border hover:border-accent-purple/50 hover:bg-bg-hover',
-            isUploading && 'cursor-not-allowed opacity-60'
-          )}
-        >
-          <input {...getInputProps()} />
-
-          {isUploading ? (
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 size={32} className="text-accent-purpleLight animate-spin" />
-              <p className="text-sm text-text-primary">Processing PDF…</p>
-              <div className="w-full bg-bg-hover rounded-full h-1.5">
-                <div
-                  className="h-1.5 rounded-full bg-accent-purple transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-text-muted">{uploadProgress}% uploaded</p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              <Upload size={32} className="text-text-muted" />
-              <div>
-                <p className="text-sm font-medium text-text-primary">
-                  {isDragActive ? 'Drop PDFs here' : 'Drag & drop PDFs here'}
-                </p>
-                <p className="text-xs text-text-muted mt-1">or click to browse · Max 50MB per file</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Selected files preview */}
-        {acceptedFiles.length > 0 && !isUploading && (
-          <div className="mt-3 space-y-1">
-            {acceptedFiles.map((f) => (
-              <div key={f.name} className="flex items-center gap-2 text-xs text-text-secondary bg-bg-hover rounded-lg px-3 py-2">
-                <FileText size={12} className="text-accent-purpleLight" />
-                <span className="truncate">{f.name}</span>
-                <span className="ml-auto text-text-muted">{(f.size / 1024).toFixed(0)} KB</span>
-              </div>
-            ))}
-          </div>
-        )}
+    <div
+      {...getRootProps({
+        className: clsx(
+          'rounded-card border border-dashed p-6 text-center transition-colors',
+          isDragActive ? 'border-accent bg-accent/5' : 'border-line bg-surface',
+          className,
+        ),
+      })}
+    >
+      <input {...getInputProps()} aria-label="Choose documents to upload" />
+      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-accent/12 text-accent-ink">
+        <CloudUpload aria-hidden="true" className="h-5 w-5" />
+      </span>
+      <p className="mt-3 text-sm font-medium text-ink">
+        {isDragActive ? 'Drop your documents here' : 'Drag documents here to build your knowledge base'}
+      </p>
+      <p className="mt-1 text-xs text-muted">{hint}</p>
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <Button variant="primary" icon={FileUp} loading={busy || isUploading} onClick={open}>
+          Choose files
+        </Button>
       </div>
+      <p className="mt-3 flex items-start justify-center gap-1.5 text-2xs text-muted">
+        <Info aria-hidden="true" className="mt-0.5 h-3 w-3 shrink-0" />
+        Files are processed in the background. You can keep working while indexing runs.
+      </p>
     </div>
   )
 }

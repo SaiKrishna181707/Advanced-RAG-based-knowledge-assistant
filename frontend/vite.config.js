@@ -1,16 +1,31 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+/**
+ * The dev server proxies /api to the Flask API so the browser sees one origin.
+ * In production the frontend calls VITE_API_URL directly (see src/api/client.js).
+ */
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Proxy /api calls to Flask so we don't need CORS in development
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_DEV_API_TARGET || 'http://localhost:5000',
         changeOrigin: true,
-      }
-    }
-  }
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    chunkSizeWarningLimit: 900,
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.js'],
+    css: false,
+    include: ['src/**/*.test.{js,jsx}'],
+  },
 })
