@@ -6,7 +6,7 @@ export function Section({ id, children, className, tone = 'canvas', divider = fa
     <section
       id={id}
       className={clsx(
-        'scroll-mt-16 px-5 py-16 sm:px-8 sm:py-24',
+        'scroll-mt-16 px-5 py-16 sm:px-8 sm:py-20',
         tone === 'surface' ? 'bg-surface' : '',
         divider && 'border-t border-line',
         className,

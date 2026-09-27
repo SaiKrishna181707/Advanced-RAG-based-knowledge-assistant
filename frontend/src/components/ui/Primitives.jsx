@@ -146,6 +146,35 @@ export function Stat({ label, value, hint, icon: Icon, tone = 'neutral' }) {
   )
 }
 
+const METRIC_COLUMNS = {
+  3: 'grid-cols-2 sm:grid-cols-3',
+  4: 'grid-cols-2 sm:grid-cols-4',
+  6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
+}
+
+/**
+ * A single hairline-separated row of headline figures. Preferred over a row of
+ * Stat cards when the numbers are a summary rather than an entry point.
+ */
+export function MetricStrip({ metrics, columns = 4, className }) {
+  return (
+    <dl
+      className={clsx(
+        'grid gap-px overflow-hidden rounded-card border border-line bg-line',
+        METRIC_COLUMNS[columns] ?? METRIC_COLUMNS[4],
+        className,
+      )}
+    >
+      {metrics.map((metric) => (
+        <div key={metric.label} className="bg-surface px-4 py-3.5">
+          <dt className="text-2xs font-medium uppercase tracking-wide text-muted">{metric.label}</dt>
+          <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">{metric.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 /** Small inline "usage: 42 / 100" meter used in the sidebar and settings. */
 export function UsageMeter({ label, used, limit, percent, detail }) {
   return (

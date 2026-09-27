@@ -36,6 +36,9 @@ EDITABLE_PREFERENCE_KEYS = (
     "retrieval_count",
 )
 
+# How many days of question history the dashboard trend covers.
+DASHBOARD_TREND_DAYS = 14
+
 
 def _preferences(user: dict) -> dict:
     stored = user.get("preferences") or {}
@@ -72,6 +75,11 @@ def overview():
                 "collections": len(collections_repo.list_collections(db, user_id)),
                 "conversations": conversations_repo.count_conversations(db, user_id),
             },
+            # Real per-day counts so the dashboard can show a trend line instead
+            # of a static number. Days with no questions are filled in client-side.
+            "questions_by_day": conversations_repo.aggregate_messages_by_day(
+                db, user_id, days=DASHBOARD_TREND_DAYS
+            ),
             "usage": usage_service.usage_summary(db, user),
             "recent_documents": [
                 {

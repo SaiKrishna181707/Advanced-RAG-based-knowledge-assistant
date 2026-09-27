@@ -98,6 +98,13 @@ export default function ConversationList() {
         <ul className="space-y-1">
           {visible.map((conversation) => {
             const active = conversation.id === currentId
+            const title = conversation.title || 'New conversation'
+            // The preview is the opening question, which is usually the title
+            // itself; only show it when it actually adds something.
+            const preview =
+              conversation.last_message_preview && conversation.last_message_preview !== title
+                ? truncate(conversation.last_message_preview, 60)
+                : ''
             return (
               <li key={conversation.id}>
                 {renaming === conversation.id ? (
@@ -138,20 +145,22 @@ export default function ConversationList() {
                       aria-current={active ? 'true' : undefined}
                       className="min-w-0 flex-1 text-left"
                     >
-                      <span
-                        className={clsx(
-                          'block truncate text-sm font-medium',
-                          active ? 'text-accent-ink' : 'text-ink',
-                        )}
-                      >
-                        {conversation.title || 'New conversation'}
+                      <span className="flex items-baseline gap-2">
+                        <span
+                          className={clsx(
+                            'min-w-0 flex-1 truncate text-sm font-medium',
+                            active ? 'text-accent-ink' : 'text-ink',
+                          )}
+                        >
+                          {title}
+                        </span>
+                        <span className="shrink-0 text-2xs text-muted/80">
+                          {relativeTime(conversation.updated_at || conversation.created_at)}
+                        </span>
                       </span>
-                      <span className="mt-0.5 block truncate text-2xs text-muted">
-                        {truncate(conversation.last_message_preview || 'No messages yet', 60)}
-                      </span>
-                      <span className="mt-0.5 block text-2xs text-muted/80">
-                        {relativeTime(conversation.updated_at || conversation.created_at)}
-                      </span>
+                      {preview && (
+                        <span className="mt-0.5 block truncate text-2xs text-muted">{preview}</span>
+                      )}
                     </button>
 
                     <span className="flex shrink-0 flex-col opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">

@@ -11,6 +11,10 @@ from ..serialize import doc_out
 
 PUBLIC_USER_FIELDS = ("name", "email", "avatar_color", "created_at", "last_login")
 
+# Avatars and collections default to the brand accent so a new account never
+# starts out with an off-brand colour in the UI.
+DEFAULT_AVATAR_COLOR = "#0d7d70"
+
 
 def create_user(
     db,
@@ -28,7 +32,7 @@ def create_user(
         "name": name,
         "email": email.lower().strip(),
         "password_hash": password_hash,
-        "avatar_color": avatar_color or "#7c5cff",
+        "avatar_color": avatar_color or DEFAULT_AVATAR_COLOR,
         "subscription_plan": subscription_plan,
         "subscription_status": subscription_status,
         "billing_customer_id": None,

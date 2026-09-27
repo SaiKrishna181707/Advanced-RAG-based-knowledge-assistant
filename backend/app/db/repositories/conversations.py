@@ -194,15 +194,47 @@ def aggregate_avg_latency(db, user_id) -> dict:
 
 
 def top_documents_queried(db, user_id, *, limit: int = 5) -> list[dict]:
+    """Documents cited most often, with names resolved from the document store.
+
+    The name is looked up rather than read from the stored citation so that a
+    document renamed after being cited still reports its current name.
+    """
     pipeline = [
         {"$match": {"user_id": ObjectId(str(user_id)), "role": "assistant"}},
         {"$unwind": "$sources"},
-        {"$group": {"_id": "$sources.document_id", "name": {"$first": "$sources.document_name"}, "count": {"$sum": 1}}},
+        {
+            "$group": {
+                "_id": "$sources.document_id",
+                "name": {"$first": "$sources.document"},
+                "count": {"$sum": 1},
+            }
+        },
         {"$sort": {"count": -1}},
         {"$limit": limit},
     ]
+
+    rows = [row for row in db.messages.aggregate(pipeline) if row.get("_id")]
+    if not rows:
+        return []
+
+    # One lookup for every cited document rather than a query per row.
+    ids = []
+    for row in rows:
+        try:
+            ids.append(ObjectId(str(row["_id"])))
+        except Exception:
+            continue
+    names = {
+        str(item["_id"]): item.get("original_name")
+        for item in db.documents.find({"_id": {"$in": ids}}, {"original_name": 1})
+    }
+
     return [
-        {"document_id": str(row["_id"]), "name": row.get("name") or "Unknown", "count": row["count"]}
-        for row in db.messages.aggregate(pipeline)
-        if row.get("_id")
+        {
+            "document_id": str(row["_id"]),
+            # Live document name first, then the name stored with the citation.
+            "name": names.get(str(row["_id"])) or row.get("name") or "Removed document",
+            "count": row["count"],
+        }
+        for row in rows
     ]

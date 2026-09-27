@@ -5,6 +5,7 @@ import {
   FolderPlus,
   KeyRound,
   ListChecks,
+  LogIn,
   MessageSquare,
   Search,
   ThumbsUp,
@@ -15,6 +16,7 @@ import {
 
 const EVENTS = {
   'user.signed_up': { label: 'Account created', icon: UserPlus },
+  'user.signed_in': { label: 'Signed in', icon: LogIn },
   'user.password_changed': { label: 'Password changed', icon: KeyRound },
   'document.uploaded': { label: 'Document uploaded', icon: FileUp },
   'document.processed': { label: 'Document indexed', icon: ListChecks, tone: 'positive' },

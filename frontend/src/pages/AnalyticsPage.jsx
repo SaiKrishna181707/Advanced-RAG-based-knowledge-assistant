@@ -6,35 +6,20 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
-  Cell,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  Activity,
-  Clock,
-  FileText,
-  HardDrive,
-  HelpCircle,
-  Layers,
-  MessagesSquare,
-  ThumbsDown,
-  ThumbsUp,
-  TriangleAlert,
-} from 'lucide-react'
-import { Card, SectionHeader, Stat, UsageMeter } from '../components/ui/Primitives'
+import { Activity, FileText, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react'
+import clsx from 'clsx'
+import { Card, MetricStrip, SectionHeader } from '../components/ui/Primitives'
 import EmptyState from '../components/ui/EmptyState'
 import { useThemeStore } from '../store/theme'
 import { describeActivity } from '../lib/activity'
-import { formatDuration, formatNumber, relativeTime } from '../lib/format'
+import { formatBytes, formatDuration, formatNumber, relativeTime } from '../lib/format'
 
 const STATUS_COLORS = {
   ready: '#0d7d70',
@@ -126,17 +111,24 @@ export default function AnalyticsPage() {
   if (loading && !data) {
     return (
       <div className="mx-auto w-full max-w-6xl space-y-4 p-4 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((index) => (
-            <div key={index} className="skeleton h-24 rounded-card" />
-          ))}
+        <div className="skeleton h-20 rounded-card" />
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+          <div className="skeleton h-72 rounded-card" />
+          <div className="skeleton h-72 rounded-card" />
         </div>
-        <div className="skeleton h-72 rounded-card" />
       </div>
     )
   }
 
   const hasQuestions = series.some((point) => point.count > 0)
+  const hasDocuments = byStatus.length > 0
+  const documentTotal = byStatus.reduce((sum, entry) => sum + (entry.count || 0), 0)
+  const tooltipStyle = {
+    background: dark ? '#151e2d' : '#ffffff',
+    border: `1px solid ${palette.grid}`,
+    borderRadius: 10,
+    fontSize: 12,
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-6">
@@ -145,29 +137,17 @@ export default function AnalyticsPage() {
         description="Counts, latencies and failures measured from your own knowledge base."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Documents" value={formatNumber(totals?.documents)} icon={FileText} tone="accent" />
-        <Stat label="Pages" value={formatNumber(totals?.pages)} icon={Layers} tone="accent" />
-        <Stat label="Chunks indexed" value={formatNumber(totals?.chunks)} icon={Layers} tone="accent" />
-        <Stat label="Conversations" value={formatNumber(totals?.conversations)} icon={MessagesSquare} tone="accent" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Questions asked" value={formatNumber(totals?.user_questions)} icon={HelpCircle} />
-        <Stat
-          label="Avg retrieval"
-          value={formatDuration(performance?.avg_retrieval_ms)}
-          icon={Clock}
-          hint={`${formatNumber(performance?.answers)} answers measured`}
-        />
-        <Stat label="Avg generation" value={formatDuration(performance?.avg_llm_ms)} icon={Clock} />
-        <Stat
-          label="Processing failures"
-          value={formatNumber(totals?.processing_failures)}
-          icon={TriangleAlert}
-          tone={totals?.processing_failures ? 'danger' : 'neutral'}
-        />
-      </div>
+      <MetricStrip
+        columns={6}
+        metrics={[
+          { label: 'Documents', value: formatNumber(totals?.documents) },
+          { label: 'Pages', value: formatNumber(totals?.pages) },
+          { label: 'Chunks indexed', value: formatNumber(totals?.chunks) },
+          { label: 'Storage used', value: formatBytes(totals?.storage_bytes) },
+          { label: 'Conversations', value: formatNumber(totals?.conversations) },
+          { label: 'Questions asked', value: formatNumber(totals?.user_questions) },
+        ]}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <ChartCard
@@ -177,13 +157,7 @@ export default function AnalyticsPage() {
           emptyMessage="Ask a question and it will be plotted here."
         >
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={series} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-              <defs>
-                <linearGradient id="questionsFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={palette.primary} stopOpacity={0.28} />
-                  <stop offset="100%" stopColor={palette.primary} stopOpacity={0} />
-                </linearGradient>
-              </defs>
+            <BarChart data={series} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 10, fill: palette.axis }}
@@ -198,27 +172,58 @@ export default function AnalyticsPage() {
                 tickLine={false}
                 width={36}
               />
-              <Tooltip
-                contentStyle={{
-                  background: dark ? '#151e2d' : '#ffffff',
-                  border: `1px solid ${palette.grid}`,
-                  borderRadius: 10,
-                  fontSize: 12,
-                }}
-                labelStyle={{ color: palette.axis }}
-              />
-              <Area
-                type="monotone"
+              <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: palette.axis }} />
+              <Bar
                 dataKey="count"
                 name="Questions"
-                stroke={palette.primary}
-                strokeWidth={2}
-                fill="url(#questionsFill)"
+                fill={palette.primary}
+                radius={[3, 3, 0, 0]}
+                maxBarSize={14}
               />
-            </AreaChart>
+            </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
+        <Card className="p-4">
+          <SectionHeader title="Performance" description="Timings measured on your answers." />
+          <dl className="mt-4 space-y-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-sm text-muted">Average retrieval</dt>
+              <dd className="text-sm font-medium tabular-nums text-ink">
+                {formatDuration(performance?.avg_retrieval_ms)}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-sm text-muted">Average generation</dt>
+              <dd className="text-sm font-medium tabular-nums text-ink">
+                {formatDuration(performance?.avg_llm_ms)}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3 border-t border-line pt-3">
+              <dt className="text-sm text-muted">Answers measured</dt>
+              <dd className="text-sm font-medium tabular-nums text-ink">
+                {formatNumber(performance?.answers)}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="flex items-center gap-1.5 text-sm text-muted">
+                <TriangleAlert aria-hidden="true" className="h-3.5 w-3.5" />
+                Processing failures
+              </dt>
+              <dd
+                className={clsx(
+                  'text-sm font-medium tabular-nums',
+                  totals?.processing_failures ? 'text-danger' : 'text-ink',
+                )}
+              >
+                {formatNumber(totals?.processing_failures)}
+              </dd>
+            </div>
+          </dl>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
         <ChartCard
           title="Documents by collection"
           description="How your knowledge base is distributed."
@@ -237,70 +242,59 @@ export default function AnalyticsPage() {
               <YAxis
                 type="category"
                 dataKey="name"
-                width={96}
+                width={112}
+                tickFormatter={(value) => (value.length > 16 ? `${value.slice(0, 15)}...` : value)}
                 tick={{ fontSize: 10, fill: palette.axis }}
                 axisLine={false}
                 tickLine={false}
               />
-              <Tooltip
-                contentStyle={{
-                  background: dark ? '#151e2d' : '#ffffff',
-                  border: `1px solid ${palette.grid}`,
-                  borderRadius: 10,
-                  fontSize: 12,
-                }}
-              />
+              <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="count" name="Documents" fill={palette.primary} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-      </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <ChartCard
-          title="Processing status"
-          description="Where documents currently stand."
-          empty={byStatus.length === 0}
-          emptyMessage="No documents to report on yet."
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={byStatus}
-                dataKey="count"
-                nameKey="status"
-                innerRadius="55%"
-                outerRadius="80%"
-                paddingAngle={2}
-                stroke="none"
-              >
-                {byStatus.map((entry) => (
-                  <Cell key={entry.status} fill={STATUS_COLORS[entry.status] || palette.secondary} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  background: dark ? '#151e2d' : '#ffffff',
-                  border: `1px solid ${palette.grid}`,
-                  borderRadius: 10,
-                  fontSize: 12,
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <ul className="mt-2 flex flex-wrap justify-center gap-3">
-            {byStatus.map((entry) => (
-              <li key={entry.status} className="flex items-center gap-1.5 text-2xs text-muted">
-                <span
-                  aria-hidden="true"
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: STATUS_COLORS[entry.status] || palette.secondary }}
-                />
-                {entry.status} · {entry.count}
-              </li>
-            ))}
-          </ul>
-        </ChartCard>
+        <Card className="p-4">
+          <SectionHeader title="Processing status" description="Where documents currently stand." />
+          {!hasDocuments ? (
+            <EmptyState
+              compact
+              className="mt-4"
+              icon={Activity}
+              title="Nothing to report"
+              description="Upload a document and its processing state will appear here."
+            />
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {byStatus.map((entry) => {
+                const count = entry.count || 0
+                const share = documentTotal > 0 ? (count / documentTotal) * 100 : 0
+                const color = STATUS_COLORS[entry.status] || palette.secondary
+                return (
+                  <li key={entry.status}>
+                    <div className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="flex items-center gap-2 capitalize text-ink">
+                        <span
+                          aria-hidden="true"
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: color }}
+                        />
+                        {entry.status}
+                      </span>
+                      <span className="tabular-nums text-muted">{formatNumber(count)}</span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${share}%`, backgroundColor: color }}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Card>
 
         <Card className="p-4">
           <SectionHeader title="Most queried documents" description="Documents cited most often in answers." />
@@ -328,63 +322,43 @@ export default function AnalyticsPage() {
             </ol>
           )}
         </Card>
-
-        <Card className="p-4">
-          <SectionHeader title="Answer feedback" description="Ratings left on answers." />
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-positive/12 text-positive">
-                <ThumbsUp aria-hidden="true" className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-xl font-semibold tabular-nums text-ink">{feedback?.up ?? 0}</p>
-                <p className="text-2xs text-muted">Helpful</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-danger/12 text-danger">
-                <ThumbsDown aria-hidden="true" className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-xl font-semibold tabular-nums text-ink">{feedback?.down ?? 0}</p>
-                <p className="text-2xs text-muted">Not helpful</p>
-              </div>
-            </div>
-            <p className="border-t border-line pt-3 text-2xs text-muted">
-              {feedback?.satisfaction !== null && feedback?.satisfaction !== undefined
-                ? `${Math.round(feedback.satisfaction * 100)}% of rated answers were marked helpful.`
-                : 'No answers have been rated yet.'}
-            </p>
-          </div>
-        </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="p-4">
-          <SectionHeader
-            title="Usage"
-            description={data?.usage ? `${data.usage.plan_name} plan` : undefined}
-          />
-          {data?.usage && (
-            <div className="mt-4 space-y-4">
-              <UsageMeter
-                label="Documents"
-                percent={data.usage.documents.percent}
-                detail={data.usage.documents.label}
-              />
-              <UsageMeter
-                label="Questions this month"
-                percent={data.usage.questions.percent}
-                detail={data.usage.questions.label}
-              />
-              <UsageMeter
-                label="Storage"
-                percent={data.usage.storage.percent}
-                detail={data.usage.storage.label}
-              />
-              <p className="flex items-center gap-2 border-t border-line pt-3 text-2xs text-muted">
-                <HardDrive aria-hidden="true" className="h-3 w-3" />
-                {formatNumber(totals?.storage_bytes)} bytes across your documents.
+          <SectionHeader title="Answer feedback" description="Ratings left on answers." />
+          {(feedback?.up ?? 0) + (feedback?.down ?? 0) === 0 ? (
+            <EmptyState
+              compact
+              className="mt-4"
+              icon={ThumbsUp}
+              title="No ratings yet"
+              description="Rate an answer in chat and it will be counted here."
+            />
+          ) : (
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-positive/12 text-positive">
+                  <ThumbsUp aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-xl font-semibold tabular-nums text-ink">{feedback?.up ?? 0}</p>
+                  <p className="text-2xs text-muted">Helpful</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-danger/12 text-danger">
+                  <ThumbsDown aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-xl font-semibold tabular-nums text-ink">{feedback?.down ?? 0}</p>
+                  <p className="text-2xs text-muted">Not helpful</p>
+                </div>
+              </div>
+              <p className="border-t border-line pt-3 text-2xs text-muted">
+                {feedback?.satisfaction !== null && feedback?.satisfaction !== undefined
+                  ? `${Math.round(feedback.satisfaction * 100)}% of rated answers were marked helpful.`
+                  : 'No answers have been rated yet.'}
               </p>
             </div>
           )}

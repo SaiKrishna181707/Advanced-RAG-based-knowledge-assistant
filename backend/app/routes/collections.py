@@ -31,7 +31,7 @@ def _collection_payload(collection: dict, *, document_count: int = 0, chunk_coun
         "id": str(collection["_id"]),
         "name": collection.get("name"),
         "description": collection.get("description") or "",
-        "color": collection.get("color") or "#7c5cff",
+        "color": collection.get("color") or collections_repo.DEFAULT_COLLECTION_COLOR,
         "document_count": document_count,
         "chunk_count": chunk_count,
         "storage_bytes": storage_bytes,
@@ -69,9 +69,12 @@ def create_collection():
     data = json_body()
     name = require_string(data, "name", min_length=1, max_length=80, label="collection name")
     description = optional_string(data, "description", max_length=300) or ""
-    color = optional_string(data, "color", max_length=9) or "#7c5cff"
+    color = (
+        optional_string(data, "color", max_length=9)
+        or collections_repo.DEFAULT_COLLECTION_COLOR
+    )
     if not HEX_COLOR.match(color):
-        raise ValidationError("Colour must be a hex value such as #7c5cff.")
+        raise ValidationError("Colour must be a hex value such as #0d7d70.")
 
     db = get_db()
     user = current_user(db)
@@ -143,8 +146,8 @@ def update_collection(collection_id: str):
     if "color" in data:
         color = optional_string(data, "color", max_length=9)
         if color and not HEX_COLOR.match(color):
-            raise ValidationError("Colour must be a hex value such as #7c5cff.")
-        fields["color"] = color or "#7c5cff"
+            raise ValidationError("Colour must be a hex value such as #0d7d70.")
+        fields["color"] = color or collections_repo.DEFAULT_COLLECTION_COLOR
 
     if not fields:
         raise ValidationError("Nothing to update.")

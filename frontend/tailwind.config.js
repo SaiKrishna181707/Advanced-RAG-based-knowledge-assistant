@@ -47,6 +47,7 @@ export default {
         'slide-up': 'slideUp 0.26s cubic-bezier(0.22, 1, 0.36, 1)',
         'slide-in-right': 'slideInRight 0.24s cubic-bezier(0.22, 1, 0.36, 1)',
         shimmer: 'shimmer 1.6s ease-in-out infinite',
+        caret: 'caret 1.1s steps(1, end) infinite',
       },
       keyframes: {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
@@ -61,6 +62,10 @@ export default {
         shimmer: {
           '0%, 100%': { opacity: '0.45' },
           '50%': { opacity: '0.85' },
+        },
+        caret: {
+          '0%, 45%': { opacity: '1' },
+          '50%, 100%': { opacity: '0' },
         },
       },
     },

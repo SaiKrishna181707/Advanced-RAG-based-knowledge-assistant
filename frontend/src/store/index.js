@@ -488,12 +488,13 @@ export const useStore = create((set, get) => ({
   // ------------------------------------------------------------ account
   overview: null,
   overviewLoading: false,
+  overviewError: null,
   usage: null,
   preferences: null,
   preferenceOptions: null,
 
   loadOverview: async () => {
-    set({ overviewLoading: true })
+    set({ overviewLoading: true, overviewError: null })
     try {
       const data = await meAPI.overview()
       set({ overview: data, usage: data.usage, overviewLoading: false })

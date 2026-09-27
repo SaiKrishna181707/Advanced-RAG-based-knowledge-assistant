@@ -9,7 +9,14 @@ from pymongo.errors import DuplicateKeyError
 from ...errors import ConflictError
 
 
-def create_collection(db, user_id, *, name: str, description: str = "", color: str = "#7c5cff") -> dict:
+# Collections default to the brand accent so a new one never starts out with an
+# off-brand colour in the UI.
+DEFAULT_COLLECTION_COLOR = "#0d7d70"
+
+
+def create_collection(
+    db, user_id, *, name: str, description: str = "", color: str = DEFAULT_COLLECTION_COLOR
+) -> dict:
     now = dt.datetime.now(dt.timezone.utc)
     document = {
         "_id": ObjectId(),

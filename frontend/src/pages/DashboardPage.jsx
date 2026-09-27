@@ -1,55 +1,127 @@
 /**
- * Personal dashboard: counts, quick actions, recent documents and conversations,
- * usage against the current plan, and the activity timeline.
+ * Personal dashboard.
+ *
+ * Everything on this page comes from GET /api/me/overview - counts, the fourteen
+ * day question trend, recent documents and conversations, and usage against the
+ * current plan. The ask box is the one interactive piece: it opens a new
+ * conversation through the same streaming endpoint the chat page uses.
  */
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, ArrowUp, FileText, FileUp, MessagesSquare, Search } from 'lucide-react'
+import clsx from 'clsx'
 import {
-  ArrowRight,
-  BarChart3,
-  FileText,
-  FileUp,
-  FolderPlus,
-  MessageSquare,
-  MessagesSquare,
-  Search,
-  Sparkles,
-} from 'lucide-react'
-import { Button, Card, SectionHeader, Skeleton, Stat, UsageMeter } from '../components/ui/Primitives'
+  Button,
+  Card,
+  MetricStrip,
+  SectionHeader,
+  Skeleton,
+  UsageMeter,
+} from '../components/ui/Primitives'
 import EmptyState from '../components/ui/EmptyState'
 import { useStore } from '../store'
 import { useAuthStore } from '../store/authStore'
-import { describeActivity } from '../lib/activity'
-import { relativeTime } from '../lib/format'
+import { pluralize, relativeTime } from '../lib/format'
 
-function QuickAction({ to, icon: Icon, label, detail, onClick }) {
+const TREND_DAYS = 14
+
+/**
+ * The API only returns days that actually had questions, so the window is
+ * zero-filled here to keep the chart's shape stable between renders.
+ */
+function buildTrend(rows) {
+  const byDate = new Map((rows || []).map((row) => [row.date, row.count]))
+  const today = new Date()
+  return Array.from({ length: TREND_DAYS }, (_, index) => {
+    const date = new Date(today)
+    date.setDate(today.getDate() - (TREND_DAYS - 1 - index))
+    const key = date.toISOString().slice(0, 10)
+    return {
+      date: key,
+      count: byDate.get(key) || 0,
+      label: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    }
+  })
+}
+
+/** Fourteen narrow bars, rendered with plain elements so the dashboard stays light. */
+function TrendChart({ series }) {
+  const [active, setActive] = useState(null)
+  const max = Math.max(1, ...series.map((point) => point.count))
+  const total = series.reduce((sum, point) => sum + point.count, 0)
+  const hovered = active === null ? null : series[active]
+
   return (
-    <Link
-      to={to}
-      onClick={onClick}
-      className="card-interactive flex items-start gap-3 p-4"
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/12 text-accent-ink">
-        <Icon aria-hidden="true" className="h-4 w-4" />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-sm font-medium text-ink">{label}</span>
-        <span className="mt-0.5 block text-xs text-muted">{detail}</span>
-      </span>
-    </Link>
+    <div className="mt-5">
+      <div className="relative flex h-24 items-end gap-[3px]">
+        {hovered && (
+          <p
+            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md border border-line bg-surface px-2 py-1 text-2xs text-ink shadow-card"
+            style={{ left: `${((active + 0.5) / series.length) * 100}%` }}
+          >
+            {hovered.label} &middot; {pluralize(hovered.count, 'question')}
+          </p>
+        )}
+        {series.map((point, index) => (
+          <button
+            key={point.date}
+            type="button"
+            onMouseEnter={() => setActive(index)}
+            onMouseLeave={() => setActive(null)}
+            onFocus={() => setActive(index)}
+            onBlur={() => setActive(null)}
+            aria-label={`${point.label}: ${pluralize(point.count, 'question')}`}
+            className="flex h-full flex-1 cursor-default flex-col items-center justify-end focus:outline-none"
+          >
+            {point.count > 0 ? (
+              <span
+                className={clsx(
+                  'w-full max-w-[18px] rounded-[3px] transition-colors',
+                  active === index ? 'bg-accent-ink' : 'bg-accent',
+                )}
+                style={{ height: `${Math.max(8, (point.count / max) * 100)}%` }}
+              />
+            ) : (
+              <span
+                className={clsx(
+                  'h-[3px] w-[3px] rounded-full transition-colors',
+                  active === index ? 'bg-muted' : 'bg-line',
+                )}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      <div className="h-px w-full bg-line" />
+      <div className="mt-2 flex items-baseline justify-between gap-2 text-2xs text-muted">
+        <span>{series[0]?.label}</span>
+        <span className="tabular-nums">
+          {total === 0 ? 'Nothing asked yet' : `${pluralize(total, 'question')} in ${TREND_DAYS} days`}
+        </span>
+        <span>Today</span>
+      </div>
+    </div>
   )
 }
+
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const overview = useStore((state) => state.overview)
   const loading = useStore((state) => state.overviewLoading)
+  const error = useStore((state) => state.overviewError)
   const loadOverview = useStore((state) => state.loadOverview)
+  const documents = useStore((state) => state.documents)
   const loadDocuments = useStore((state) => state.loadDocuments)
   const loadConversations = useStore((state) => state.loadConversations)
   const newConversation = useStore((state) => state.newConversation)
+  const selectConversation = useStore((state) => state.selectConversation)
   const setScope = useStore((state) => state.setScope)
+  const ask = useStore((state) => state.ask)
+
+  const [draft, setDraft] = useState('')
+  const [asking, setAsking] = useState(false)
 
   useEffect(() => {
     loadOverview()
@@ -60,90 +132,207 @@ export default function DashboardPage() {
   const counts = overview?.counts
   const usage = overview?.usage
   const name = (user?.name || '').split(' ')[0]
+  const readyCount = useMemo(
+    () => documents.filter((document) => document.status === 'ready').length,
+    [documents],
+  )
+  const series = useMemo(() => buildTrend(overview?.questions_by_day), [overview])
+  const asked = series.reduce((sum, point) => sum + point.count, 0)
+  const pending = loading && !counts
 
-  const startConversation = () => {
+  const submit = (event) => {
+    event.preventDefault()
+    const question = draft.trim()
+    if (!question || asking || readyCount === 0) return
+    setAsking(true)
+    setDraft('')
     newConversation()
     setScope({ mode: 'all', collection_id: null, document_ids: [] })
+    navigate('/app/chat')
+    ask(question)
+  }
+
+  const openConversation = (id) => {
+    selectConversation(id)
     navigate('/app/chat')
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 p-4 sm:p-6">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight text-ink">
-          Welcome back{name ? `, ${name}` : ''}
-        </h1>
-        <p className="mt-1 text-sm text-muted">
-          Upload your documents, ask questions naturally, and get grounded answers with transparent
-          sources.
-        </p>
+    <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-6">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-ink">
+            Welcome back{name ? `, ${name}` : ''}
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Ask a question across everything you have uploaded.
+          </p>
+        </div>
+        <Link to="/app/documents" className="btn-secondary text-sm">
+          <FileUp aria-hidden="true" className="h-4 w-4" />
+          Upload document
+        </Link>
       </header>
 
-      {/* Counts */}
-      {loading && !counts ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((index) => (
-            <Skeleton key={index} className="h-24 rounded-card" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat
-            label="Documents"
-            value={counts?.documents ?? 0}
-            icon={FileText}
-            tone="accent"
-            hint={counts?.documents ? 'Indexed and searchable' : 'None uploaded yet'}
-          />
-          <Stat
-            label="Questions"
-            value={counts?.questions ?? 0}
-            icon={MessageSquare}
-            tone="accent"
-          />
-          <Stat label="Collections" value={counts?.collections ?? 0} icon={FolderPlus} tone="accent" />
-          <Stat
-            label="Conversations"
-            value={counts?.conversations ?? 0}
-            icon={MessagesSquare}
-            tone="accent"
-          />
+      {error && !overview && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          <span>{error}</span>
+          <Button size="sm" onClick={loadOverview}>
+            Retry
+          </Button>
         </div>
       )}
 
-      {/* Quick actions */}
-      <section aria-labelledby="quick-actions">
-        <h2 id="quick-actions" className="text-sm font-semibold text-ink">
-          Quick actions
-        </h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <QuickAction
-            to="/app/documents"
-            icon={FileUp}
-            label="Upload document"
-            detail="Build your knowledge base"
-          />
-          <QuickAction
-            to="/app/chat"
-            icon={MessageSquare}
-            label="Start conversation"
-            detail="Ask across all documents"
-            onClick={startConversation}
-          />
-          <QuickAction
-            to="/app/search"
-            icon={Search}
-            label="Search knowledge"
-            detail="Hybrid search with filters"
-          />
-          <QuickAction
-            to="/app/collections"
-            icon={FolderPlus}
-            label="Create collection"
-            detail="Separate knowledge spaces"
-          />
+      {/* Ask */}
+      <Card className="p-4 sm:p-5">
+        <h2 className="text-sm font-semibold text-ink">Ask your knowledge base</h2>
+        <p className="mt-0.5 text-2xs text-muted">
+          Answers are grounded in retrieved passages and always cite their sources.
+        </p>
+        <form onSubmit={submit} className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <label htmlFor="dashboard-question" className="sr-only">
+            Ask a question about your documents
+          </label>
+          <div className="relative flex-1">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            />
+            <input
+              id="dashboard-question"
+              type="text"
+              value={draft}
+              autoComplete="off"
+              disabled={readyCount === 0}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder={
+                readyCount === 0
+                  ? 'Upload a document to start asking questions'
+                  : 'Ask anything across your documents…'
+              }
+              className="input pl-9"
+            />
+          </div>
+          <Button
+            type="submit"
+            variant="primary"
+            icon={ArrowUp}
+            loading={asking}
+            disabled={!draft.trim() || readyCount === 0}
+            className="shrink-0"
+          >
+            Ask
+          </Button>
+        </form>
+        <p className="mt-2 text-2xs text-muted">
+          {readyCount === 0 ? (
+            <>
+              No processed documents yet.{' '}
+              <Link to="/app/documents" className="text-accent-ink underline underline-offset-2">
+                Upload one
+              </Link>{' '}
+              to get started.
+            </>
+          ) : (
+            `Searching across ${pluralize(readyCount, 'ready document')}`
+          )}
+        </p>
+      </Card>
+
+      {/* Counts */}
+      {pending ? (
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4">
+          {[0, 1, 2, 3].map((index) => (
+            <div key={index} className="bg-surface px-4 py-3.5">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="mt-2 h-5 w-10" />
+            </div>
+          ))}
         </div>
-      </section>
+      ) : (
+        <MetricStrip
+          metrics={[
+            { label: 'Documents', value: counts?.documents ?? 0 },
+            { label: 'Questions', value: counts?.questions ?? 0 },
+            { label: 'Collections', value: counts?.collections ?? 0 },
+            { label: 'Conversations', value: counts?.conversations ?? 0 },
+          ]}
+        />
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        {/* Trend */}
+        <Card className="p-4">
+          <SectionHeader
+            title="Questions"
+            description={`The last ${TREND_DAYS} days.`}
+            actions={
+              <Link to="/app/analytics" className="btn-ghost text-xs">
+                Analytics
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
+            }
+          />
+          {pending ? (
+            <Skeleton className="mt-5 h-24 rounded-card" />
+          ) : asked === 0 ? (
+            <EmptyState
+              compact
+              className="mt-4"
+              icon={Search}
+              title="No questions in this window"
+              description="Ask something from the box above and the trend will build up here."
+            />
+          ) : (
+            <TrendChart series={series} />
+          )}
+        </Card>
+
+        {/* Usage */}
+        <Card className="p-4">
+          <SectionHeader
+            title="Usage"
+            description={usage ? `${usage.plan_name} plan` : 'This month'}
+            actions={
+              <Link to="/app/settings" className="btn-ghost text-xs">
+                Manage
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
+            }
+          />
+          {usage ? (
+            <div className="mt-4 space-y-4">
+              <UsageMeter
+                label="Documents"
+                percent={usage.documents.percent}
+                detail={usage.documents.label}
+              />
+              <UsageMeter
+                label="Questions this month"
+                percent={usage.questions.percent}
+                detail={usage.questions.label}
+              />
+              <UsageMeter
+                label="Storage"
+                percent={usage.storage.percent}
+                detail={usage.storage.label}
+              />
+              <p className="border-t border-line pt-3 text-2xs text-muted">
+                Retrieves up to {usage.limits.retrieval_top_k} passages per question on this plan.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+            </div>
+          )}
+        </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         {/* Recent documents */}
@@ -182,7 +371,9 @@ export default function DashboardPage() {
                     {document.name}
                   </Link>
                   <span className="shrink-0 text-2xs text-muted">
-                    {document.chunk_count || 0} chunks · {relativeTime(document.created_at)}
+                    {pluralize(document.chunk_count || 0, 'passage')}
+                    <span aria-hidden="true"> &middot; </span>
+                    {relativeTime(document.created_at)}
                   </span>
                 </li>
               ))}
@@ -190,50 +381,6 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        {/* Usage */}
-        <Card className="p-4">
-          <SectionHeader
-            title="Usage"
-            description={usage ? `${usage.plan_name} plan · this month` : 'Loading…'}
-            actions={
-              <Link to="/app/settings" className="btn-ghost text-xs">
-                Manage
-              </Link>
-            }
-          />
-          {usage ? (
-            <div className="mt-4 space-y-4">
-              <UsageMeter
-                label="Documents"
-                percent={usage.documents.percent}
-                detail={usage.documents.label}
-              />
-              <UsageMeter
-                label="Questions this month"
-                percent={usage.questions.percent}
-                detail={usage.questions.label}
-              />
-              <UsageMeter
-                label="Storage"
-                percent={usage.storage.percent}
-                detail={usage.storage.label}
-              />
-              <p className="flex items-start gap-1.5 border-t border-line pt-3 text-2xs text-muted">
-                <Sparkles aria-hidden="true" className="mt-0.5 h-3 w-3 shrink-0 text-accent" />
-                Retrieves up to {usage.limits.retrieval_top_k} passages per question on this plan.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-4 space-y-4">
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
-            </div>
-          )}
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         {/* Recent conversations */}
         <Card className="p-4">
           <SectionHeader
@@ -257,65 +404,30 @@ export default function DashboardPage() {
             <ul className="mt-3 divide-y divide-line">
               {(overview?.recent_conversations || []).map((conversation) => (
                 <li key={conversation.id}>
-                  <Link
-                    to="/app/chat"
-                    className="flex items-center gap-3 py-2.5 hover:text-accent-ink"
+                  <button
+                    type="button"
+                    onClick={() => openConversation(conversation.id)}
+                    className="flex w-full items-center gap-3 py-2.5 text-left hover:text-accent-ink"
                   >
                     <MessagesSquare aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm text-ink">
                         {conversation.title || 'New conversation'}
                       </span>
-                      <span className="block truncate text-2xs text-muted">
-                        {conversation.last_message_preview || 'No messages yet'}
-                      </span>
+                      {conversation.last_message_preview &&
+                        conversation.last_message_preview !== conversation.title && (
+                          <span className="block truncate text-2xs text-muted">
+                            {conversation.last_message_preview}
+                          </span>
+                        )}
                     </span>
                     <span className="shrink-0 text-2xs text-muted">
                       {relativeTime(conversation.updated_at || conversation.created_at)}
                     </span>
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>
-          )}
-        </Card>
-
-        {/* Activity */}
-        <Card className="p-4">
-          <SectionHeader
-            title="Recent activity"
-            actions={
-              <Link to="/app/analytics" className="btn-ghost text-xs">
-                <BarChart3 aria-hidden="true" className="h-3.5 w-3.5" />
-                Analytics
-              </Link>
-            }
-          />
-          {(overview?.activity || []).length === 0 ? (
-            <p className="mt-4 text-sm text-muted">Your activity will appear here as you use ALBATROSS.</p>
-          ) : (
-            <ol className="mt-3 space-y-3">
-              {(overview?.activity || []).map((entry) => {
-                const activity = describeActivity(entry)
-                const Icon = activity.icon
-                return (
-                  <li key={entry.id} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-raised text-muted">
-                      {Icon ? <Icon aria-hidden="true" className="h-3 w-3" /> : null}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-xs text-ink">{activity.label}</span>
-                      {activity.detail && (
-                        <span className="block truncate text-2xs text-muted">{activity.detail}</span>
-                      )}
-                    </span>
-                    <span className="shrink-0 text-2xs text-muted">
-                      {relativeTime(entry.created_at)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ol>
           )}
         </Card>
       </div>

@@ -117,7 +117,7 @@ PLANS: dict[str, Plan] = {
             "Up to 100 MB per file",
             "8-turn conversation memory",
         ),
-        cta="Talk to us",
+        cta="Choose Team",
     ),
 }
 

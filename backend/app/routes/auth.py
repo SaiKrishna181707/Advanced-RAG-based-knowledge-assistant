@@ -291,7 +291,7 @@ def update_profile():
     avatar_color = optional_string(data, "avatar_color", max_length=9)
     if avatar_color is not None:
         if not re.match(r"^#[0-9a-fA-F]{6}$", avatar_color):
-            raise ValidationError("Avatar colour must be a hex value such as #7c5cff.")
+            raise ValidationError("Avatar colour must be a hex value such as #0d7d70.")
         fields["avatar_color"] = avatar_color
 
     if not fields:

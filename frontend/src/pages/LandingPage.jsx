@@ -5,8 +5,9 @@
  * A signed-in visitor is redirected to the dashboard by LandingGate in App.jsx,
  * so this page is only ever shown to visitors.
  *
- * Deliberately short: hero and product preview, four benefits, the workflow,
- * pricing, one closing call to action. Nothing else.
+ * Deliberately short: hero and product preview, four claims, the workflow,
+ * pricing, one closing call to action. Nothing else. Every surface below the
+ * hero has to earn its height.
  */
 import { useEffect } from 'react'
 import LandingNav from '../components/landing/LandingNav'

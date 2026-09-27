@@ -7,9 +7,9 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MessagesSquare, PanelLeftOpen, Sparkles, X } from 'lucide-react'
+import { MessagesSquare, PanelLeftOpen, X } from 'lucide-react'
 import clsx from 'clsx'
-import { Button, Card, SectionHeader } from '../components/ui/Primitives'
+import { Button, Card, SectionHeader, Skeleton } from '../components/ui/Primitives'
 import EmptyState from '../components/ui/EmptyState'
 import MessageBubble from '../components/chat/MessageBubble'
 import ChatInput from '../components/chat/ChatInput'
@@ -19,16 +19,32 @@ import FollowUps from '../components/chat/FollowUps'
 import SourcePanel from '../components/SourcePanel'
 import { useStore } from '../store'
 import { useAuthStore } from '../store/authStore'
+import { pluralize } from '../lib/format'
 
-const STARTERS = [
-  'Summarise the main argument of these documents.',
-  'What methodology did they use?',
-  'List the key findings with their sources.',
-  'What limitations do the authors acknowledge?',
-]
+/**
+ * Openers shown before the first question. The first two are built from the
+ * documents that are actually indexed, so the suggestions stay relevant to the
+ * knowledge base rather than being fixed marketing copy.
+ */
+function buildStarters(documents) {
+  const derived = documents
+    .filter((document) => document.status === 'ready')
+    .slice(0, 2)
+    .map((document) => `Summarise ${document.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')}`)
+
+  const generic = [
+    'What are the main findings?',
+    'Which limitations or caveats are noted?',
+    'Compare the recommendations side by side.',
+  ]
+
+  return [...derived, ...generic].slice(0, 4)
+}
+
 
 export default function ChatPage() {
   const documents = useStore((state) => state.documents)
+  const documentsLoading = useStore((state) => state.documentsLoading)
   const loadDocuments = useStore((state) => state.loadDocuments)
   const loadCollections = useStore((state) => state.loadCollections)
   const loadConversations = useStore((state) => state.loadConversations)
@@ -88,6 +104,12 @@ export default function ChatPage() {
     () => documents.filter((document) => document.status === 'ready').length,
     [documents],
   )
+
+  const starters = useMemo(() => buildStarters(documents), [documents])
+
+  // An empty list means either "nothing uploaded" or "still fetching"; only the
+  // first of those should claim the account has no documents.
+  const documentsPending = documentsLoading && documents.length === 0
 
   const lastAssistantIndex = useMemo(() => {
     for (let index = messages.length - 1; index >= 0; index -= 1) {
@@ -166,25 +188,31 @@ export default function ChatPage() {
           onScroll={onScroll}
           className="min-h-0 flex-1 overflow-y-auto px-3 py-5 sm:px-6"
         >
-          <div className="mx-auto w-full max-w-3xl space-y-5">
+          <div
+            className={clsx(
+              'mx-auto w-full max-w-3xl space-y-5',
+              messages.length === 0 && 'flex min-h-full flex-col justify-center',
+            )}
+          >
             {messages.length === 0 ? (
-              <div className="pt-6">
-                <div className="text-center">
-                  <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-accent/12 text-accent-ink">
-                    <Sparkles aria-hidden="true" className="h-5 w-5" />
-                  </span>
-                  <h2 className="mt-3 text-base font-semibold text-ink">
-                    Ask your knowledge base a question
-                  </h2>
-                  <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">
-                    Answers are built only from passages retrieved out of your documents, and every
-                    claim carries a citation you can open.
-                  </p>
-                </div>
+              <div className="py-6 text-center">
+                <h2 className="text-lg font-semibold tracking-tight text-ink">
+                  Ask your knowledge base
+                </h2>
+                <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">
+                  Answers come only from your documents, and every claim carries a citation you can
+                  open.
+                </p>
 
-                {readyCount === 0 ? (
+                {documentsPending ? (
+                  <div className="mx-auto mt-7 flex max-w-2xl flex-wrap justify-center gap-2">
+                    {[0, 1, 2, 3].map((index) => (
+                      <Skeleton key={index} className="h-7 w-44 rounded-full" />
+                    ))}
+                  </div>
+                ) : readyCount === 0 ? (
                   <EmptyState
-                    className="mt-6"
+                    className="mx-auto mt-7 max-w-lg text-left"
                     icon={MessagesSquare}
                     title="No processed documents yet"
                     description="Upload a document and wait for it to reach the ready state. Then this page will have something to answer from."
@@ -195,18 +223,23 @@ export default function ChatPage() {
                     }
                   />
                 ) : (
-                  <div className="mx-auto mt-6 grid max-w-xl gap-2 sm:grid-cols-2">
-                    {STARTERS.map((starter) => (
-                      <button
-                        key={starter}
-                        type="button"
-                        onClick={() => submit(starter)}
-                        className="card-interactive px-3 py-2.5 text-left text-sm text-muted"
-                      >
-                        {starter}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <p className="mt-7 text-2xs font-medium uppercase tracking-wide text-muted">
+                      Searching {pluralize(readyCount, 'document')} &middot; try one of these
+                    </p>
+                    <div className="mx-auto mt-3 flex max-w-2xl flex-wrap justify-center gap-2">
+                      {starters.map((starter) => (
+                        <button
+                          key={starter}
+                          type="button"
+                          onClick={() => submit(starter)}
+                          className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-accent/40 hover:text-ink"
+                        >
+                          {starter}
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             ) : (
@@ -257,9 +290,11 @@ export default function ChatPage() {
               isStreaming={isStreaming}
               disabled={readyCount === 0}
               placeholder={
-                readyCount === 0
-                  ? 'Upload a document to start asking questions'
-                  : `Ask a question, ${(user?.name || '').split(' ')[0] || 'there'}…`
+                documentsPending
+                  ? 'Loading your documents'
+                  : readyCount === 0
+                    ? 'Upload a document to start asking questions'
+                    : `Ask a question, ${(user?.name || '').split(' ')[0] || 'there'}…`
               }
             />
             <p className="mt-2 text-center text-2xs text-muted">
