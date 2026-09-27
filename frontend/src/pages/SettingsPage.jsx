@@ -22,6 +22,7 @@ import {
 import clsx from 'clsx'
 import { Badge, Button, Card, SectionHeader, UsageMeter } from '../components/ui/Primitives'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import SwatchPicker from '../components/ui/SwatchPicker'
 import { useStore } from '../store'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/theme'
@@ -235,20 +236,16 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="profile-avatar" className="label">
-                  Avatar colour
-                </label>
-                <input
-                  id="profile-avatar"
-                  type="color"
-                  className="h-9 w-16 cursor-pointer rounded-input border border-line bg-surface"
+              <fieldset>
+                <legend className="label">Avatar colour</legend>
+                <SwatchPicker
+                  name="avatar colour"
                   value={profile.avatar_color}
-                  onChange={(event) =>
-                    setProfile((current) => ({ ...current, avatar_color: event.target.value }))
+                  onChange={(color) =>
+                    setProfile((current) => ({ ...current, avatar_color: color }))
                   }
                 />
-              </div>
+              </fieldset>
 
               <div>
                 <label htmlFor="profile-email" className="label">

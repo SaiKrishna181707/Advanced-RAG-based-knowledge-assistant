@@ -16,12 +16,12 @@ import { Button, Card, SectionHeader } from '../components/ui/Primitives'
 import EmptyState from '../components/ui/EmptyState'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import SwatchPicker from '../components/ui/SwatchPicker'
 import { useStore } from '../store'
 import { formatBytes, relativeTime } from '../lib/format'
+import { ACCENT_SWATCHES } from '../lib/palette'
 
-const COLORS = ['#0d7d70', '#2563eb', '#7c3aed', '#c2410c', '#be123c', '#0f766e', '#4d7c0f']
-
-const EMPTY_FORM = { name: '', description: '', color: COLORS[0] }
+const EMPTY_FORM = { name: '', description: '', color: ACCENT_SWATCHES[0] }
 
 export default function CollectionsPage() {
   const navigate = useNavigate()
@@ -57,7 +57,7 @@ export default function CollectionsPage() {
     setForm({
       name: collection.name || '',
       description: collection.description || '',
-      color: collection.color || COLORS[0],
+      color: collection.color || ACCENT_SWATCHES[0],
     })
     setError(null)
   }
@@ -269,22 +269,11 @@ export default function CollectionsPage() {
 
           <fieldset>
             <legend className="label">Colour</legend>
-            <div className="flex flex-wrap gap-2">
-              {COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setForm((current) => ({ ...current, color }))}
-                  aria-label={`Use colour ${color}`}
-                  aria-pressed={form.color === color}
-                  className="h-7 w-7 rounded-full border-2 transition-transform hover:scale-105"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: form.color === color ? 'rgb(var(--ink))' : 'transparent',
-                  }}
-                />
-              ))}
-            </div>
+            <SwatchPicker
+              name="collection colour"
+              value={form.color}
+              onChange={(color) => setForm((current) => ({ ...current, color }))}
+            />
           </fieldset>
         </form>
       </Modal>
