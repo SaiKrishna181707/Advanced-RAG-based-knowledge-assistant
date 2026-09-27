@@ -264,111 +264,67 @@
   .prose-albatross hr { @apply my-4 border-line; }
   .prose-albatross .katex-display { @apply my-3 overflow-x-auto overflow-y-hidden; }
 }
-/* ALBATROSS landing system.
-   The landing page owns its palette so the marketing surface cannot inherit the
-   application's light/dark theme or legacy landing styles. */
-.albatross-landing{
-  --canvas:10 10 15;
-  --surface:15 16 23;
-  --raised:21 22 30;
-  --line:255 255 255;
-  --ink:245 245 247;
-  --muted:164 167 178;
-  --accent:244 240 232;
-  --accent-ink:17 17 23;
-  --accent-fg:17 17 23;
-  --accent-soft:39 38 42;
-  color-scheme:dark;
-  background:#0a0a0f;
-  color:#f5f5f7;
-}
-.albatross-landing .landing-page{background:#0a0a0f}
-.albatross-landing .landing-page,
-.albatross-landing main{overflow-x:clip}
 
-/* Keep the first viewport intentionally sparse and premium. */
-.albatross-landing main{background:#0a0a0f}
-.albatross-landing .border-line{border-color:rgba(255,255,255,.10)}
-.albatross-landing .text-ink{color:#f5f5f7}
-.albatross-landing .text-muted{color:#a4a7b2}
-.albatross-landing .text-accent{color:#f4f0e8}
-.albatross-landing .bg-surface{background:#0f1017}
-.albatross-landing .bg-canvas{background:#0a0a0f}
+/* ============================================================================
+   ALBATROSS Landing Page — Dark Theme Scoping & Responsive Layout
+   
+   Imported from globals.css (which is imported in main.jsx) so these styles
+   are guaranteed to be in the production bundle. The .albatross-landing wrapper
+   prevents the app-wide light theme from leaking into the marketing page.
+   ========================================================================= */
 
-/* Supported-format strip: quiet continuation of the hero rather than a light
-   interruption. */
-.albatross-landing .marquee-mask{mask-image:linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%);-webkit-mask-image:linear-gradient(to right,transparent 0,#000 64px,#000 calc(100% - 64px),transparent 100%)}
-.albatross-landing main>div:first-child .border-y{border-color:rgba(255,255,255,.08)}
-.albatross-landing .animate-marquee{opacity:.72}
-
-/* Product sections share the same dark canvas. Surface sections are only a
-   slightly lifted black, never a second theme. */
-.albatross-landing section{scroll-margin-top:100px}
-.albatross-landing section.bg-surface{background:#0f1017}
-.albatross-landing .rounded-card{border-color:rgba(255,255,255,.10);background:#0f1017}
-.albatross-landing .btn-secondary{border-color:rgba(255,255,255,.14);background:#15161e;color:#f5f5f7}
-.albatross-landing .btn-secondary:hover{background:#1b1c25}
-.albatross-landing .btn-primary{background:#f4f0e8;color:#111117}
-.albatross-landing .card,
-.albatross-landing .card-interactive{border-color:rgba(255,255,255,.10);background:#0f1017}
-.albatross-landing footer{background:#0a0a0f!important;border-top-color:rgba(255,255,255,.10)}
-.albatross-landing footer .text-muted{color:#858995}
-.albatross-landing a{transition:color .2s ease}
-.albatross-landing ::selection{background:rgba(244,240,232,.22);color:#fff}
-
-@media(max-width:767px){
-  .albatross-landing .marquee-mask{mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
+.albatross-landing {
+  background: #0a0a0f;
+  color: #f5f5f7;
+  color-scheme: dark;
+  min-height: 100dvh;
 }
 
+/* Smooth scroll for in-page anchors */
+.albatross-landing {
+  scroll-behavior: smooth;
+}
 
-/* ALBATROSS dark hero/header — intentionally global so the production bundle
-   cannot lose the landing layout through a component-level stylesheet import. */
-.albatross-dark-landing{background:#0a0a0f}
-.albatross-hero{position:relative;min-height:100svh;overflow:hidden;isolation:isolate;background:#0a0a0f;color:#fff}
-.albatross-ambient{position:absolute;z-index:-1;inset:-22% -12% auto;height:68%;pointer-events:none;background:radial-gradient(62% 100% at 16% 0%,rgba(43,58,143,.72) 0%,rgba(43,58,143,.38) 34%,transparent 72%),radial-gradient(62% 96% at 84% 0%,rgba(91,42,134,.68) 0%,rgba(91,42,134,.34) 34%,transparent 72%);filter:blur(58px);opacity:.95}
-.albatross-header{position:fixed;top:24px;left:50%;z-index:50;width:calc(100% - 48px);max-width:1380px;min-height:58px;transform:translateX(-50%);margin:0;padding:6px 7px 6px 9px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;border:1px solid rgba(255,255,255,.11);border-radius:999px;background:rgba(0,0,0,.42);backdrop-filter:blur(24px) saturate(1.15);-webkit-backdrop-filter:blur(24px) saturate(1.15);box-sizing:border-box}
-.albatross-brand{display:inline-flex;align-items:center;gap:10px;padding:5px 10px 5px 5px;color:#fff;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:-.025em;white-space:nowrap}
-.albatross-logo{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#f4f0e8;color:#111117}
-.albatross-logo svg{width:20px;height:20px}
-.albatross-nav{display:flex;align-items:center;justify-content:center;gap:3px;min-width:0}
-.albatross-nav-item,.albatross-signin,.albatross-start,.albatross-menu,.albatross-mobile-nav button,.albatross-mobile-nav a{font:inherit;border:0;cursor:pointer}
-.albatross-nav-item{display:inline-flex;text-decoration:none;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;background:transparent;color:rgba(255,255,255,.62);font-size:12px;font-weight:600;white-space:nowrap;transition:background .2s ease,color .2s ease,transform .2s ease}
-.albatross-nav-item:hover{color:#fff;background:rgba(255,255,255,.08)}
-.albatross-nav-item.is-active{color:#111117;background:#f4f0e8}
-.albatross-actions{display:flex;align-items:center;gap:3px}
-.albatross-signin{display:inline-flex;align-items:center;text-decoration:none;padding:10px 12px;border-radius:999px;background:transparent;color:rgba(255,255,255,.68);font-size:12px;font-weight:600;white-space:nowrap}
-.albatross-signin:hover{color:#fff}
-.albatross-start{display:inline-flex;align-items:center;text-decoration:none;justify-content:center;gap:7px;padding:10px 15px;border-radius:999px;background:#f4f0e8;color:#111117;font-size:12px;font-weight:700;white-space:nowrap;transition:transform .2s ease}
-.albatross-start:hover{transform:translateY(-1px)}
-.albatross-hero-copy{position:relative;z-index:1;width:min(1240px,calc(100% - 48px));min-height:100svh;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:150px 0 90px;text-align:center;box-sizing:border-box}
-.albatross-eyebrow{display:inline-block;color:rgba(255,255,255,.48);font-size:11px;font-weight:600;letter-spacing:.30em;line-height:1}
-.albatross-hero-copy h1{max-width:1240px;margin:28px auto 0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:clamp(64px,9vw,138px);line-height:.88;letter-spacing:-.065em;font-weight:550;color:transparent;background:linear-gradient(180deg,#fff 3%,#f2f3f6 42%,#858b96 100%);-webkit-background-clip:text;background-clip:text}
-.albatross-menu{display:none;width:40px;height:40px;place-items:center;gap:5px;border-radius:999px;background:rgba(255,255,255,.06);color:#fff}
-.albatross-menu span{width:15px;height:1.5px;display:block;background:#fff;transition:transform .2s ease}
-.albatross-menu.is-open span:first-child{transform:translateY(3.25px) rotate(45deg)}
-.albatross-menu.is-open span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
-.albatross-mobile-nav{position:fixed;top:92px;left:16px;right:16px;z-index:60;display:grid;gap:4px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:rgba(10,10,15,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
-.albatross-mobile-nav button,.albatross-mobile-nav a{display:flex;align-items:center;text-decoration:none;gap:9px;width:100%;padding:12px;border-radius:12px;background:transparent;color:rgba(255,255,255,.72);text-align:left;font-size:13px}
-.albatross-mobile-nav button:hover,.albatross-mobile-nav a:hover{background:rgba(255,255,255,.07);color:#fff}
-.albatross-mobile-nav .mobile-cta{background:#f4f0e8;color:#111117;justify-content:center}
-@media(max-width:1120px) and (min-width:768px){
-  .albatross-header{gap:4px}
-  .albatross-brand{padding-right:5px}
-  .albatross-nav-item{padding-inline:8px;font-size:11px;gap:5px}
-  .albatross-actions{gap:0}
-  .albatross-signin{padding-inline:9px}
-  .albatross-start{padding-inline:11px}
+@media (prefers-reduced-motion: reduce) {
+  .albatross-landing {
+    scroll-behavior: auto;
+  }
 }
-@media(max-width:767px){
-  .albatross-hero{min-height:720px}
-  .albatross-header{top:16px;width:calc(100% - 32px);padding:5px 6px 5px 7px}
-  .albatross-nav,.albatross-actions{display:none}
-  .albatross-menu{display:grid;margin-left:auto}
-  .albatross-hero-copy{width:calc(100% - 32px);min-height:720px;padding:120px 0 70px}
-  .albatross-eyebrow{font-size:9px;letter-spacing:.22em}
-  .albatross-hero-copy h1{margin-top:22px;font-size:clamp(52px,15vw,86px);line-height:.92;letter-spacing:-.06em}
-  .albatross-ambient{inset:-12% -38% auto;height:58%;filter:blur(58px)}
+
+/* Desktop nav: show nav + actions, hide hamburger at >= 768px */
+@media (min-width: 768px) {
+  .albatross-nav {
+    display: flex !important;
+  }
+  .albatross-actions {
+    display: flex !important;
+  }
+  .albatross-hamburger {
+    display: none !important;
+  }
 }
-@media(prefers-reduced-motion:reduce){
-  .albatross-nav-item,.albatross-start,.albatross-menu span{transition:none}
+
+/* Mobile: hide desktop nav + actions, show hamburger at < 768px */
+@media (max-width: 767px) {
+  .albatross-nav {
+    display: none !important;
+  }
+  .albatross-actions {
+    display: none !important;
+  }
+  .albatross-hamburger {
+    display: flex !important;
+  }
+}
+
+/* Focus states for landing links and buttons */
+.albatross-landing :focus-visible {
+  outline: 2px solid #2dd4bf;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Ensure landing page links have no text decoration */
+.albatross-landing a {
+  text-decoration: none;
 }

@@ -1,31 +1,80 @@
-/** Consistent landing-page section frame: eyebrow, heading, lede, content. */
+/** Consistent landing-page section frame: eyebrow, heading, lede, content.
+ *
+ * Updated for dark landing palette. Uses hardcoded dark colors inside
+ * .albatross-landing to prevent light theme leakage.
+ */
 import clsx from 'clsx'
 
-export function Section({ id, children, className, tone = 'canvas', divider = false, ...rest }) {
+export function Section({ id, children, className, tone = 'base', divider = false, ...rest }) {
+  const bgMap = {
+    base: '#0a0a0f',
+    elevated: '#0f1017',
+    raised: '#15161e',
+  }
+
   return (
     <section
       id={id}
-      className={clsx(
-        'scroll-mt-16 px-5 py-16 sm:px-8 sm:py-20',
-        tone === 'surface' ? 'bg-surface' : '',
-        divider && 'border-t border-line',
-        className,
-      )}
+      className={clsx('scroll-mt-20', className)}
+      style={{
+        padding: '64px 20px',
+        background: bgMap[tone] || bgMap.base,
+        borderTop: divider ? '1px solid rgba(255,255,255,0.06)' : 'none',
+      }}
       {...rest}
     >
-      <div className="mx-auto w-full max-w-6xl">{children}</div>
+      <div style={{ maxWidth: '72rem', width: '100%', margin: '0 auto' }}>{children}</div>
     </section>
   )
 }
 
 export function SectionIntro({ eyebrow, title, lede, align = 'left', className }) {
   return (
-    <div className={clsx(align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl', className)}>
+    <div
+      className={clsx(className)}
+      style={{
+        maxWidth: align === 'center' ? '42rem' : '42rem',
+        margin: align === 'center' ? '0 auto' : undefined,
+        textAlign: align === 'center' ? 'center' : 'left',
+      }}
+    >
       {eyebrow && (
-        <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-accent">{eyebrow}</p>
+        <p
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.18em',
+            color: '#2dd4bf',
+          }}
+        >
+          {eyebrow}
+        </p>
       )}
-      <h2 className="mt-2.5 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{title}</h2>
-      {lede && <p className="mt-3 text-base leading-relaxed text-muted">{lede}</p>}
+      <h2
+        style={{
+          marginTop: '10px',
+          fontSize: 'clamp(1.5rem, 3vw, 1.875rem)',
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          color: '#f5f5f7',
+          lineHeight: 1.2,
+        }}
+      >
+        {title}
+      </h2>
+      {lede && (
+        <p
+          style={{
+            marginTop: '12px',
+            fontSize: '1rem',
+            lineHeight: 1.65,
+            color: 'rgba(255,255,255,0.5)',
+          }}
+        >
+          {lede}
+        </p>
+      )}
     </div>
   )
 }

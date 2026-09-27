@@ -1,18 +1,13 @@
 /**
- * Pricing.
+ * Pricing — dark landing palette.
  *
  * Plans come from GET /api/plans so the landing page and the server can never
  * disagree about a limit. A local fallback keeps the section readable if the API
  * is unreachable.
- *
- * The highlights only ever name entitlements the server actually enforces:
- * document, storage and question allowances, retrieval depth, file size and
- * conversation memory. No payment provider is connected, and the page says so.
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
-import clsx from 'clsx'
 import { metaAPI } from '../../api/client'
 import { Section, SectionIntro } from './Section'
 
@@ -104,42 +99,110 @@ export default function Pricing() {
         lede="Plans differ in how much you can store, how many questions you can ask, and how deeply the retriever searches."
       />
 
-      {/* One sheet with three columns rather than three floating cards. */}
-      <div className="mt-10 overflow-hidden rounded-card border border-line bg-surface">
-        <div className="grid lg:grid-cols-3">
+      {/* One sheet with three columns */}
+      <div
+        style={{
+          marginTop: '40px',
+          overflow: 'hidden',
+          borderRadius: '14px',
+          border: '1px solid rgba(255,255,255,0.06)',
+          background: '#0f1017',
+        }}
+      >
+        <div
+          style={{ display: 'grid' }}
+          className="lg:!grid-cols-3"
+        >
           {plans.map((plan, index) => (
             <div
               key={plan.key}
-              className={clsx(
-                'flex flex-col p-6',
-                index > 0 && 'border-t border-line lg:border-l lg:border-t-0',
-                plan.highlighted && 'bg-accent/[0.04]',
-              )}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '24px',
+                borderTop: index > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                background: plan.highlighted ? 'rgba(45,212,191,0.04)' : 'transparent',
+              }}
+              className={index > 0 ? 'lg:!border-t-0 lg:!border-l lg:!border-l-[rgba(255,255,255,0.06)]' : ''}
             >
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-ink">{plan.name}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f5f5f7' }}>{plan.name}</h3>
                 {plan.highlighted && (
-                  <span className="text-2xs font-semibold uppercase tracking-[0.14em] text-accent">
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.14em',
+                      color: '#2dd4bf',
+                    }}
+                  >
                     Most popular
                   </span>
                 )}
               </div>
 
-              <p className="mt-3 flex items-baseline gap-1.5">
-                <span className="text-3xl font-semibold tabular-nums tracking-tight text-ink">
+              <p style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span
+                  style={{
+                    fontSize: '30px',
+                    fontWeight: 600,
+                    letterSpacing: '-0.02em',
+                    color: '#f5f5f7',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
                   {priceOf(plan)}
                 </span>
                 {Number(plan.price_monthly) > 0 && (
-                  <span className="text-sm text-muted">/ month</span>
+                  <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>/ month</span>
                 )}
               </p>
 
-              <p className="mt-2 min-h-10 text-sm leading-relaxed text-muted">{plan.tagline}</p>
+              <p
+                style={{
+                  marginTop: '8px',
+                  minHeight: '40px',
+                  fontSize: '14px',
+                  lineHeight: 1.65,
+                  color: 'rgba(255,255,255,0.5)',
+                }}
+              >
+                {plan.tagline}
+              </p>
 
-              <ul className="mt-5 flex-1 space-y-2.5 border-t border-line pt-5">
+              <ul
+                style={{
+                  marginTop: '20px',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  borderTop: '1px solid rgba(255,255,255,0.06)',
+                  paddingTop: '20px',
+                }}
+              >
                 {(plan.highlights || []).map((highlight) => (
-                  <li key={highlight} className="flex items-start gap-2.5 text-sm text-muted">
-                    <Check aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                  <li
+                    key={highlight}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      fontSize: '14px',
+                      color: 'rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    <Check
+                      aria-hidden="true"
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        marginTop: '3px',
+                        flexShrink: 0,
+                        color: '#2dd4bf',
+                      }}
+                    />
                     <span>{highlight}</span>
                   </li>
                 ))}
@@ -147,7 +210,41 @@ export default function Pricing() {
 
               <Link
                 to="/signup"
-                className={clsx('mt-6 w-full', plan.highlighted ? 'btn-primary' : 'btn-secondary')}
+                style={{
+                  marginTop: '24px',
+                  width: '100%',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  transition: 'background 0.15s ease',
+                  ...(plan.highlighted
+                    ? { background: '#f4f0e8', color: '#111117' }
+                    : {
+                        background: 'transparent',
+                        color: '#f5f5f7',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                      }),
+                }}
+                onMouseEnter={(e) => {
+                  if (plan.highlighted) {
+                    e.currentTarget.style.background = '#e8e4d8'
+                  } else {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (plan.highlighted) {
+                    e.currentTarget.style.background = '#f4f0e8'
+                  } else {
+                    e.currentTarget.style.background = 'transparent'
+                  }
+                }}
               >
                 {plan.cta || `Choose ${plan.name}`}
               </Link>
@@ -155,8 +252,16 @@ export default function Pricing() {
           ))}
         </div>
 
-        <p className="border-t border-line px-6 py-4 text-xs leading-relaxed text-muted">
-          <span className="font-medium text-ink">Billing is not connected yet.</span>{' '}
+        <p
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding: '16px 24px',
+            fontSize: '12px',
+            lineHeight: 1.65,
+            color: 'rgba(255,255,255,0.5)',
+          }}
+        >
+          <span style={{ fontWeight: 500, color: '#f5f5f7' }}>Billing is not connected yet.</span>{' '}
           {billing?.note ||
             'Plans are product-level entitlements. No payment provider is wired up, so nothing is charged.'}{' '}
           Changing plan from Settings updates your limits immediately and takes no payment.

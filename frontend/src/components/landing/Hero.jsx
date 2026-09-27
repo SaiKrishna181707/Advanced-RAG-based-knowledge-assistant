@@ -1,37 +1,97 @@
-import { motion } from 'framer-motion'
-import { ArrowRight, Command, FileText, Search, ShieldCheck } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import ProductPreview from './ProductPreview'
+/**
+ * Landing hero — full-viewport dark SaaS hero for ALBATROSS.
+ *
+ * Features:
+ * - Full 100svh dark background (#0a0a0f)
+ * - Ambient indigo/violet radial glow (upper 30-40%)
+ * - "INTERFACE SYSTEMS" eyebrow
+ * - Large metallic-gradient "Everything above the fold" headline
+ * - Responsive clamp() typography
+ * - Centered flex layout with proper header clearance
+ */
 
 const EASE = [0.16, 1, 0.3, 1]
 
 export default function Hero() {
   return (
-    <section className="landing-hero relative overflow-hidden">
-      <div className="landing-hero-glow pointer-events-none absolute inset-x-0 top-0 h-[34rem]" aria-hidden="true" />
-      <div className="landing-hero-grid pointer-events-none absolute inset-x-0 top-0 h-[42rem]" aria-hidden="true" />
-      <div className="relative mx-auto w-full max-w-6xl px-5 pb-20 pt-20 sm:px-8 sm:pb-24 sm:pt-28">
-        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE }} className="mx-auto max-w-4xl text-center">
-          <div className="landing-eyebrow"><span className="h-1.5 w-1.5 rounded-full bg-accent" />Interface for your private knowledge</div>
-          <h1 className="mt-7 text-[3rem] font-semibold leading-[0.98] tracking-[-0.045em] text-ink sm:text-[4.7rem] lg:text-[5.75rem]">Your knowledge.<br /><span className="text-muted">Actually searchable.</span></h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted sm:text-lg">Upload documents, ask questions in plain language, and get grounded answers with citations that lead back to the source.</p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/signup" className="btn-primary px-5 py-2.5 text-sm">Start building<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link>
-            <a href="#how-it-works" className="btn-secondary px-5 py-2.5 text-sm">See how it works</a>
-          </div>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-2xs text-muted">
-            <span className="flex items-center gap-1.5"><FileText className="h-3 w-3" />25 documents free</span>
-            <span className="hidden h-1 w-1 rounded-full bg-line sm:block" />
-            <span className="flex items-center gap-1.5"><Search className="h-3 w-3" />Hybrid retrieval</span>
-            <span className="hidden h-1 w-1 rounded-full bg-line sm:block" />
-            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" />Private by default</span>
-          </div>
-        </motion.div>
-        <motion.div id="preview" className="relative mt-14 scroll-mt-24 sm:mt-18" initial={{ opacity: 0, y: 24, scale: 0.99 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.12, ease: EASE }}>
-          <div className="landing-preview-shadow absolute -inset-5 rounded-[2rem]" aria-hidden="true" />
-          <div className="relative"><ProductPreview /></div>
-        </motion.div>
-        <div className="mx-auto mt-7 flex max-w-xl items-center justify-center gap-2 text-2xs font-mono text-muted/60"><Command className="h-3 w-3" /><span>Ask your knowledge base anything</span></div>
+    <section
+      className="albatross-hero"
+      style={{
+        position: 'relative',
+        minHeight: '100svh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0a0a0f',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Ambient glow */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          background: [
+            'radial-gradient(ellipse 55% 50% at 20% 10%, rgba(43,58,143,0.22), transparent 70%)',
+            'radial-gradient(ellipse 55% 50% at 80% 10%, rgba(91,42,134,0.20), transparent 70%)',
+            'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(60,50,140,0.10), transparent 70%)',
+          ].join(', '),
+        }}
+      />
+
+      {/* Hero copy — centered in viewport */}
+      <div
+        className="albatross-hero-copy"
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          padding: '0 24px',
+          maxWidth: '1200px',
+          width: '100%',
+        }}
+      >
+        {/* Eyebrow */}
+        <p
+          className="albatross-eyebrow"
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.25em',
+            color: 'rgba(255,255,255,0.45)',
+            marginBottom: '28px',
+          }}
+        >
+          INTERFACE SYSTEMS
+        </p>
+
+        {/* Headline with metallic gradient */}
+        <h1
+          style={{
+            fontSize: 'clamp(52px, 9vw, 138px)',
+            fontWeight: 700,
+            lineHeight: 1.0,
+            letterSpacing: '-0.03em',
+            fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+            background: 'linear-gradient(180deg, #ffffff 0%, #f2f3f6 45%, #858b96 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            margin: 0,
+            padding: 0,
+            maxWidth: '12ch',
+          }}
+        >
+          Everything above the fold
+        </h1>
       </div>
     </section>
   )

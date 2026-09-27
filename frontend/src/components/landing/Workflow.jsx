@@ -1,8 +1,5 @@
 /**
- * The pipeline in three steps.
- *
- * Laid out across the page rather than stacked, so it reads as a sequence and
- * not as three more paragraphs. The detail lives in the README.
+ * The pipeline in three steps — dark landing palette.
  */
 import { Section, SectionIntro } from './Section'
 
@@ -26,21 +23,54 @@ const STEPS = [
 
 export default function Workflow() {
   return (
-    <Section id="how-it-works" tone="surface" divider>
+    <Section id="how-it-works" tone="elevated" divider>
       <SectionIntro
         eyebrow="How it works"
         title="From upload to cited answer."
         lede="Three steps, and nothing about the answer is hidden from you."
       />
 
-      <ol className="mt-12 grid gap-8 sm:grid-cols-3 sm:gap-10">
+      <ol
+        style={{
+          marginTop: '48px',
+          display: 'grid',
+          gap: '32px',
+        }}
+        className="sm:!grid-cols-3"
+      >
         {STEPS.map((step) => (
-          <li key={step.n} className="border-t border-line pt-5">
-            <span className="font-mono text-2xs font-medium tracking-[0.2em] text-accent">
+          <li
+            key={step.n}
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              paddingTop: '20px',
+              listStyle: 'none',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '11px',
+                fontWeight: 500,
+                letterSpacing: '0.2em',
+                color: '#2dd4bf',
+              }}
+            >
               {step.n}
             </span>
-            <h3 className="mt-2.5 text-sm font-semibold text-ink">{step.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
+            <h3 style={{ marginTop: '10px', fontSize: '14px', fontWeight: 600, color: '#f5f5f7' }}>
+              {step.title}
+            </h3>
+            <p
+              style={{
+                marginTop: '8px',
+                fontSize: '14px',
+                lineHeight: 1.65,
+                color: 'rgba(255,255,255,0.5)',
+              }}
+            >
+              {step.body}
+            </p>
           </li>
         ))}
       </ol>
