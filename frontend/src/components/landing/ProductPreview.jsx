@@ -8,7 +8,8 @@
  * is deliberately static: no API calls and no invented analytics, so the preview
  * cannot promise a surface that does not exist.
  */
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp,
   Check,
@@ -106,64 +107,126 @@ function Relevance({ score, showValue = true }) {
   )
 }
 
+
+
 function ChatView() {
+  const [typedQuestion, setTypedQuestion] = useState('')
+  const [showAnswer, setShowAnswer] = useState(false)
+  
+  const questionText = "What was the Q3 revenue growth, and what drove it?"
+
+  useEffect(() => {
+    let timeout
+    if (typedQuestion.length < questionText.length) {
+      timeout = setTimeout(() => {
+        setTypedQuestion(questionText.slice(0, typedQuestion.length + 1))
+      }, 50) // typing speed
+    } else if (!showAnswer) {
+      timeout = setTimeout(() => {
+        setShowAnswer(true)
+      }, 600) // think time
+    }
+    
+    // reset loop for demo purposes
+    if (showAnswer) {
+      timeout = setTimeout(() => {
+        setTypedQuestion('')
+        setShowAnswer(false)
+      }, 6000)
+    }
+    
+    return () => clearTimeout(timeout)
+  }, [typedQuestion, showAnswer])
+
   return (
-    <div className="grid sm:grid-cols-[1.55fr_1fr]">
+    <div className="grid sm:grid-cols-[1.55fr_1fr] h-[22rem]">
       <div className="flex flex-col gap-3 p-3.5 sm:p-4">
-        <div className="flex justify-end">
-          <p className="max-w-[88%] rounded-card rounded-br-sm bg-accent px-3 py-2 text-xs leading-relaxed text-accent-fg sm:text-sm">
-            Which dataset did they evaluate on, and how large was it?
-          </p>
+        <div className="flex justify-end min-h-[2.5rem]">
+          {typedQuestion && (
+            <div className="max-w-[88%] rounded-card rounded-br-sm bg-accent px-3 py-2 text-xs leading-relaxed text-accent-fg sm:text-sm shadow-sm">
+              {typedQuestion}
+              {typedQuestion.length < questionText.length && (
+                <span className="inline-block h-3.5 w-[2px] bg-white/70 ml-0.5 align-middle animate-pulse" />
+              )}
+            </div>
+          )}
         </div>
 
-        <p className="flex items-center gap-1.5 text-2xs text-muted">
-          <span className="h-1.5 w-1.5 rounded-full bg-positive" aria-hidden="true" />
-          Research Papers · hybrid retrieval · 34 ms
-        </p>
+        <AnimatePresence>
+          {showAnswer && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col gap-3"
+            >
+              <p className="flex items-center gap-1.5 text-2xs text-muted">
+                <span className="h-1.5 w-1.5 rounded-full bg-positive" aria-hidden="true" />
+                Financial Reports · hybrid retrieval · 42 ms
+              </p>
 
-        <div className="max-w-[95%] rounded-card rounded-bl-sm border border-line bg-canvas px-3 py-2.5 text-xs leading-relaxed text-ink sm:text-sm">
-          <p>
-            The model was evaluated on the MIMIC-III clinical dataset, restricted to 12,480
-            admission records after filtering
-            <Citation n={1} />. They held back a 20% split for evaluation
-            <Citation n={2} />.
-          </p>
-          <p className="mt-2 text-2xs text-muted">2 passages · 1 document</p>
-        </div>
+              <div className="max-w-[95%] rounded-card rounded-bl-sm border border-line/40 bg-surface px-3 py-2.5 text-xs leading-relaxed text-ink sm:text-sm shadow-sm ring-1 ring-white/10">
+                <p>
+                  In Q3, total revenue grew by 24% year-over-year to $4.2M, driven primarily by strong enterprise software sales
+                  <Citation n={1} />. Operating margins also saw significant improvement, expanding to 18% due to cost efficiencies
+                  <Citation n={2} />.
+                </p>
+                <p className="mt-2 text-2xs text-muted">2 passages · 1 document</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="mt-auto flex items-center gap-2 rounded-input border border-line bg-canvas py-1.5 pl-3 pr-1.5">
-          <span className="flex-1 text-xs text-muted/80">Ask a follow-up</span>
-          <span
-            aria-hidden="true"
-            className="h-3.5 w-px animate-caret bg-accent"
-          />
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-accent text-accent-fg">
+        <div className="mt-auto flex items-center gap-2 rounded-input border border-line/40 bg-surface/50 py-1.5 pl-3 pr-1.5 ring-1 ring-white/5">
+          <span className="flex-1 text-xs text-muted/60">Ask a follow-up</span>
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-accent/20 text-accent">
             <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
           </span>
         </div>
       </div>
 
-      <div className="border-t border-line bg-raised/40 p-3.5 sm:border-l sm:border-t-0 sm:p-4">
-        <p className="text-2xs font-semibold uppercase tracking-[0.12em] text-muted">Sources</p>
-        <ul className="mt-3 space-y-2">
-          {SOURCES.map((source) => (
-            <li key={source.n} className="rounded-input border border-line bg-surface p-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-accent/12 text-2xs font-semibold text-accent-ink">
-                  {source.n}
-                </span>
-                <span className="min-w-0 truncate text-2xs font-medium text-ink">{source.name}</span>
-              </div>
-              <p className="mt-1.5 line-clamp-2 text-2xs leading-relaxed text-muted">
-                {source.snippet}
-              </p>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <span className="text-2xs text-muted">{source.location}</span>
-                <Relevance score={source.score} />
-              </div>
-            </li>
-          ))}
-        </ul>
+      <div className="border-t border-line/40 bg-surface/30 p-3.5 sm:border-l sm:border-t-0 sm:p-4 relative">
+        <AnimatePresence>
+          {showAnswer && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <p className="text-2xs font-semibold uppercase tracking-[0.12em] text-muted">Sources</p>
+              <ul className="mt-3 space-y-2">
+                <li className="rounded-input border border-line/40 bg-surface/60 p-2.5 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-accent/12 text-2xs font-semibold text-accent">1</span>
+                    <span className="min-w-0 truncate text-2xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-2xs leading-relaxed text-muted">
+                    ...total revenue reached $4.2M, representing a 24% YoY growth, fueled heavily by enterprise software renewals...
+                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="text-2xs text-muted">Page 3</span>
+                    <Relevance score={0.92} />
+                  </div>
+                </li>
+                <li className="rounded-input border border-line/40 bg-surface/60 p-2.5 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-accent/12 text-2xs font-semibold text-accent">2</span>
+                    <span className="min-w-0 truncate text-2xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-2xs leading-relaxed text-muted">
+                    ...cost optimization strategies executed in Q2 resulted in operating margins expanding to a record 18%...
+                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="text-2xs text-muted">Page 8</span>
+                    <Relevance score={0.85} />
+                  </div>
+                </li>
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

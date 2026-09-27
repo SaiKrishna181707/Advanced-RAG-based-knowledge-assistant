@@ -18,7 +18,7 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto w-full max-w-6xl px-5 sm:px-8">
+      <div className="relative mx-auto w-full max-w-[90rem] px-5 sm:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-6 inline-flex items-center rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted shadow-sm">
             Albatross AI Assistant
