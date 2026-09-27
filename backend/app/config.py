@@ -22,6 +22,11 @@ DEFAULT_CORS_ORIGINS = (
     "http://127.0.0.1:5173",
 )
 
+# In production the API must talk to a managed MongoDB (Atlas). A loopback URI
+# means the deployment points at a database that disappears with the container,
+# so it is refused at boot instead of failing silently later.
+LOOPBACK_HOSTS = ("localhost", "127.0.0.1", "0.0.0.0", "::1", "host.docker.internal")
+
 DEFAULT_ALLOWED_EXTENSIONS = ("pdf", "txt", "md", "markdown", "docx", "csv")
 
 # Preferred Groq models, best first. The first model the API key can actually use
@@ -38,6 +43,7 @@ DEFAULT_SECRETS = {
     "",
     "dev-secret-key",
     "change-this-to-a-random-string-in-production",
+    "change-this-to-a-different-random-string-in-production",
 }
 
 
@@ -84,12 +90,29 @@ class Settings:
         # --- Secrets ---
         self.secret_key = _raw("FLASK_SECRET_KEY", "")
         self.jwt_secret = _raw("JWT_SECRET", "") or self.secret_key
+        # Refresh tokens are signed with their own key so a leaked access-token
+        # secret does not let an attacker mint long-lived refresh tokens. Falling
+        # back to the access secret keeps single-secret deployments working.
+        self.jwt_refresh_secret = (
+            _raw("JWT_REFRESH_SECRET", "") or self.jwt_secret
+        )
         self.jwt_algorithm = "HS256"
-        self.jwt_ttl_hours = _int("JWT_EXPIRES_HOURS", 168)
+        # Access tokens are short lived; refresh tokens carry the session. The
+        # legacy JWT_EXPIRES_HOURS still wins if it is set, so existing
+        # deployments keep the lifetime they were configured with.
+        legacy_hours = _int("JWT_EXPIRES_HOURS", 0)
+        self.jwt_access_ttl_minutes = (
+            legacy_hours * 60 if legacy_hours > 0 else _int("JWT_ACCESS_TTL_MINUTES", 30)
+        )
+        self.jwt_refresh_ttl_days = _int("JWT_REFRESH_TTL_DAYS", 30)
 
         # --- MongoDB ---
         self.mongodb_uri = _raw("MONGODB_URI", _raw("MONGO_URI", ""))
-        self.mongodb_database = _raw("MONGODB_DATABASE", "albatross")
+        # MONGODB_DB_NAME is the documented name; MONGODB_DATABASE is kept as an
+        # accepted alias for deployments that already set it.
+        self.mongodb_database = _raw(
+            "MONGODB_DB_NAME", _raw("MONGODB_DATABASE", "albatross")
+        )
         self.mongodb_timeout_ms = _int("MONGODB_TIMEOUT_MS", 5000)
 
         # --- LLM ---
@@ -175,9 +198,61 @@ class Settings:
         if self.is_production:
             if self.secret_key in DEFAULT_SECRETS:
                 problems.append("FLASK_SECRET_KEY is a default value in production.")
+            if self.jwt_secret and self.jwt_secret in DEFAULT_SECRETS:
+                problems.append("JWT_SECRET is a default value in production.")
+            if self.jwt_refresh_secret and self.jwt_refresh_secret == self.jwt_secret:
+                problems.append(
+                    "JWT_REFRESH_SECRET is not set, so refresh tokens share the access-token "
+                    "secret. Set it to a separate random value."
+                )
             if "*" in self.cors_origins:
                 problems.append("CORS_ORIGINS allows '*' in production.")
+            elif not _raw("CORS_ORIGINS", ""):
+                problems.append(
+                    "CORS_ORIGINS is not set, so only localhost origins are allowed and the "
+                    "deployed frontend will be blocked by the browser."
+                )
         return problems
+
+    def production_config_errors(self) -> list[str]:
+        """Misconfigurations that must stop a production process from starting.
+
+        These are unrecoverable: serving traffic with them would either lose all
+        tenant data (a loopback database) or refuse every request from the real
+        frontend. Failing at boot makes the problem obvious in the deploy log
+        instead of surfacing as scattered 500s.
+        """
+        if not self.is_production:
+            return []
+
+        errors: list[str] = []
+        uri = self.mongodb_uri.lower()
+        if uri.startswith("mongodb://") and any(host in uri for host in LOOPBACK_HOSTS):
+            errors.append(
+                "MONGODB_URI points at a local/loopback MongoDB. Production requires a "
+                "managed database (MongoDB Atlas), e.g. "
+                "mongodb+srv://<user>:<password>@<cluster>.mongodb.net/."
+            )
+        if self.secret_key in DEFAULT_SECRETS:
+            errors.append("FLASK_SECRET_KEY must be set to a strong random value in production.")
+        if not self.jwt_secret:
+            errors.append(
+                "JWT_SECRET (or FLASK_SECRET_KEY as a fallback) must be set in production."
+            )
+        # The documented production setup gives refresh tokens their own secret. A
+        # fallback to the access secret would let one leaked key mint 30-day
+        # sessions, which is exactly what the split is meant to prevent.
+        if self.jwt_refresh_secret in DEFAULT_SECRETS or (
+            self.jwt_refresh_secret and self.jwt_refresh_secret == self.jwt_secret
+        ):
+            errors.append(
+                "JWT_REFRESH_SECRET must be set to a separate random value in production."
+            )
+        if "*" in self.cors_origins:
+            errors.append(
+                "CORS_ORIGINS must list the deployed frontend origins, not '*', in production."
+            )
+        return errors
 
 
 settings = Settings()

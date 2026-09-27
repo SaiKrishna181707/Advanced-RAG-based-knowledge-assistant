@@ -133,6 +133,16 @@ def ensure_indexes() -> None:
         ("usage", [("user_id", ASCENDING), ("period", ASCENDING)], {"unique": True, "name": "user_period_unique"}),
 
         ("corpus_state", [("user_id", ASCENDING)], {"unique": True, "name": "user_unique"}),
+
+        # Refresh tokens use the jti as _id, so uniqueness comes for free. The
+        # TTL index lets MongoDB reclaim expired sessions without a cron job.
+        ("refresh_tokens", [("user_id", ASCENDING), ("family_id", ASCENDING)], {"name": "user_family"}),
+        ("refresh_tokens", [("family_id", ASCENDING)], {"name": "family"}),
+        (
+            "refresh_tokens",
+            [("expires_at", ASCENDING)],
+            {"name": "expiry_ttl", "expireAfterSeconds": 0},
+        ),
     ]
 
     created = 0

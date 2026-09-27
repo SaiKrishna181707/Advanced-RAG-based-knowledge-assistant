@@ -11,27 +11,55 @@
 import axios from 'axios'
 
 const TOKEN_KEY = 'albatross.token'
+const REFRESH_KEY = 'albatross.refresh'
 export const UNAUTHORIZED_EVENT = 'albatross:unauthorized'
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${String(import.meta.env.VITE_API_URL).replace(/\/$/, '')}/api`
   : '/api'
 
-export function getToken() {
+function readStored(key) {
   try {
-    return window.localStorage.getItem(TOKEN_KEY)
+    return window.localStorage.getItem(key)
   } catch {
     return null
   }
 }
 
-export function setToken(token) {
+function writeStored(key, value) {
   try {
-    if (token) window.localStorage.setItem(TOKEN_KEY, token)
-    else window.localStorage.removeItem(TOKEN_KEY)
+    if (value) window.localStorage.setItem(key, value)
+    else window.localStorage.removeItem(key)
   } catch {
     /* private browsing - the token simply will not persist */
   }
+}
+
+export function getToken() {
+  return readStored(TOKEN_KEY)
+}
+
+export function setToken(token) {
+  writeStored(TOKEN_KEY, token)
+}
+
+export function getRefreshToken() {
+  return readStored(REFRESH_KEY)
+}
+
+export function setRefreshToken(token) {
+  writeStored(REFRESH_KEY, token)
+}
+
+/** Store the token pair returned by signup, login or refresh. */
+export function setSession({ token, refreshToken } = {}) {
+  setToken(token)
+  setRefreshToken(refreshToken)
+}
+
+export function clearSession() {
+  setToken(null)
+  setRefreshToken(null)
 }
 
 export class ApiError extends Error {
@@ -105,18 +133,85 @@ function normaliseError(error) {
 const http = axios.create({ baseURL: API_BASE_URL, timeout: 60000 })
 
 http.interceptors.request.use((config) => {
+  // The refresh call carries its own credential and must not be sent with a
+  // stale access token.
+  if (config.skipAuthRefresh) return config
   const token = getToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
+// Endpoints that establish a session: a 401 from these is a credential problem,
+// not an expired-session problem, so it must not trigger a refresh or sign-out.
+const SESSION_ENDPOINTS = ['/auth/refresh', '/auth/login', '/auth/signup']
+
+function isSessionEndpoint(url) {
+  const value = String(url || '')
+  return SESSION_ENDPOINTS.some((endpoint) => value.includes(endpoint))
+}
+
+// One refresh at a time: concurrent 401s share the same in-flight request
+// instead of each rotating the refresh token and invalidating the others.
+let refreshInFlight = null
+
+async function requestNewAccessToken() {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return null
+
+  if (!refreshInFlight) {
+    const promise = http
+      .request({
+        method: 'post',
+        url: '/auth/refresh',
+        data: { refresh_token: refreshToken },
+        skipAuthRefresh: true,
+      })
+      .then((response) => {
+        const body = response.data
+        const data = body && typeof body === 'object' && 'success' in body ? body.data : body
+        if (!data || !data.token) throw new Error('Refresh response did not include a token.')
+        setSession({ token: data.token, refreshToken: data.refresh_token || refreshToken })
+        return data.token
+      })
+      .catch(() => {
+        // The session is over: the refresh token is expired, revoked or unknown.
+        clearSession()
+        return null
+      })
+    refreshInFlight = promise
+    promise.then(() => {
+      refreshInFlight = null
+    })
+  }
+
+  return refreshInFlight
+}
+
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status
-    if (status === 401 && getToken()) {
-      setToken(null)
-      window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT))
+    const original = error?.config
+
+    if (status === 401 && original && !original._retried && !isSessionEndpoint(original.url)) {
+      const hadSession = Boolean(getToken() || getRefreshToken())
+      const token = await requestNewAccessToken()
+
+      if (token) {
+        original._retried = true
+        original.headers = { ...(original.headers || {}), Authorization: `Bearer ${token}` }
+        try {
+          return await http.request(original)
+        } catch (retryError) {
+          return Promise.reject(normaliseError(retryError))
+        }
+      }
+
+      if (hadSession) {
+        // Refresh is impossible or refused, so the session is genuinely over.
+        clearSession()
+        window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT))
+      }
     }
     return Promise.reject(normaliseError(error))
   },
@@ -137,6 +232,19 @@ async function call(config) {
 export const authAPI = {
   signup: (payload) => call({ method: 'post', url: '/auth/signup', data: payload }),
   login: (payload) => call({ method: 'post', url: '/auth/login', data: payload }),
+  refresh: (refreshToken) =>
+    call({
+      method: 'post',
+      url: '/auth/refresh',
+      data: { refresh_token: refreshToken },
+      skipAuthRefresh: true,
+    }),
+  logout: (refreshToken, { allDevices = false } = {}) =>
+    call({
+      method: 'post',
+      url: '/auth/logout',
+      data: { refresh_token: refreshToken || null, all_devices: allDevices },
+    }),
   me: () => call({ method: 'get', url: '/auth/me' }),
   session: () => call({ method: 'get', url: '/auth/session' }),
   updateProfile: (payload) => call({ method: 'patch', url: '/auth/profile', data: payload }),
@@ -225,10 +333,8 @@ export function streamAnswer(payload, handlers = {}) {
   const { onMeta, onSources, onDelta, onDone, onError } = handlers
 
   const run = async () => {
-    const token = getToken()
-    let response
-    try {
-      response = await fetch(`${API_BASE_URL}/chat/stream`, {
+    const post = (token) =>
+      fetch(`${API_BASE_URL}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -237,10 +343,29 @@ export function streamAnswer(payload, handlers = {}) {
         body: JSON.stringify(payload),
         signal: controller.signal,
       })
+
+    let response
+    try {
+      response = await post(getToken())
     } catch (error) {
       if (error?.name === 'AbortError') return
       onError?.(new ApiError(FALLBACK_MESSAGES[0], { status: 0, code: 'network_error' }))
       return
+    }
+
+    // Streams bypass the axios interceptor, so the expired-access-token case is
+    // handled here: refresh once and retry before giving up on the session.
+    if (response.status === 401) {
+      const refreshed = await requestNewAccessToken()
+      if (refreshed) {
+        try {
+          response = await post(refreshed)
+        } catch (error) {
+          if (error?.name === 'AbortError') return
+          onError?.(new ApiError(FALLBACK_MESSAGES[0], { status: 0, code: 'network_error' }))
+          return
+        }
+      }
     }
 
     if (!response.ok) {
@@ -253,8 +378,8 @@ export function streamAnswer(payload, handlers = {}) {
       } catch {
         /* non-JSON error body - keep the fallback message */
       }
-      if (response.status === 401 && getToken()) {
-        setToken(null)
+      if (response.status === 401 && (getToken() || getRefreshToken())) {
+        clearSession()
         window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT))
       }
       onError?.(new ApiError(message, { status: response.status, code }))

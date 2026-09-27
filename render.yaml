@@ -29,14 +29,23 @@ services:
         generateValue: true
       - key: JWT_SECRET
         generateValue: true
+      # Signs refresh tokens. Generated separately so the two secrets differ.
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_TTL_MINUTES
+        value: "30"
+      - key: JWT_REFRESH_TTL_DAYS
+        value: "30"
       - key: GROQ_API_KEY
         sync: false
 
       # --- MongoDB Atlas ---
+      # Production must use Atlas. The API refuses to boot in production with a
+      # loopback URI, so a Docker/local database cannot be used here by mistake.
       # mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
       - key: MONGODB_URI
         sync: false
-      - key: MONGODB_DATABASE
+      - key: MONGODB_DB_NAME
         value: albatross
 
       # --- LLM ---

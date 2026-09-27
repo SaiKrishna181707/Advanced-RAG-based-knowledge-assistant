@@ -16,8 +16,15 @@ import os
 import time
 import uuid
 
+# A throwaway database, never the development one. Both variable names are set:
+# MONGODB_DB_NAME is what app.config reads first, and config also loads backend/.env
+# (which points at the real development database), so leaving either unset would
+# make the suite write to - and then fail to clean up - real data.
+TEST_DATABASE = "albatross_test"
+
 os.environ["MONGODB_URI"] = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
-os.environ["MONGODB_DATABASE"] = "albatross_test"
+os.environ["MONGODB_DB_NAME"] = TEST_DATABASE
+os.environ["MONGODB_DATABASE"] = TEST_DATABASE
 os.environ["PROCESSING_MODE"] = "sync"
 os.environ["EMBEDDING_PROVIDER"] = "hashing"
 os.environ["RATE_LIMIT_ENABLED"] = "false"
@@ -28,9 +35,11 @@ os.environ.setdefault("FLASK_SECRET_KEY", "test-secret-key-for-pytest-only-and-l
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-pytest-only-and-long-enough")
 
 import pytest  # noqa: E402
+from pymongo.errors import PyMongoError  # noqa: E402
 
 from app import create_app  # noqa: E402
 from app.db import mongo  # noqa: E402
+from app.services import job_runner  # noqa: E402
 
 PDF_TEXT = "Albatross retrieval evaluation notes."
 
@@ -77,11 +86,34 @@ def mongo_available() -> bool:
 
 @pytest.fixture(scope="session")
 def app(mongo_available):
+    from app.config import settings
+
+    # Refuse to run against anything but the throwaway database. Test data has
+    # silently landed in the development database before; this guard makes that
+    # a loud failure instead of a quiet one.
+    assert settings.mongodb_database == TEST_DATABASE, (
+        f"refusing to run the test suite against {settings.mongodb_database!r}; "
+        f"expected {TEST_DATABASE!r}"
+    )
+
+    client = mongo.get_client()
+    # Start from a clean database: a session that died before its teardown ran
+    # would otherwise leave documents behind, and several tests use fixed email
+    # addresses that then collide on the next run.
+    client.drop_database(TEST_DATABASE)
+
     application = create_app()
     application.config["TESTING"] = True
+
     yield application
-    client = mongo.get_client()
-    client.drop_database(os.environ["MONGODB_DATABASE"])
+
+    # Let any in-flight ingestion finish before the connection goes away, or a
+    # worker thread is cancelled mid-write with pymongo._OperationCancelled.
+    job_runner.shutdown(wait=True)
+    try:
+        client.drop_database(TEST_DATABASE)
+    except PyMongoError:  # pragma: no cover - best effort cleanup
+        pass
     client.close()
 
 

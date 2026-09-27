@@ -8,7 +8,14 @@
  * out through the UNAUTHORIZED_EVENT listener registered here.
  */
 import { create } from 'zustand'
-import { UNAUTHORIZED_EVENT, authAPI, getToken, setToken } from '../api/client'
+import {
+  UNAUTHORIZED_EVENT,
+  authAPI,
+  clearSession,
+  getRefreshToken,
+  getToken,
+  setSession,
+} from '../api/client'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -21,7 +28,9 @@ export const useAuthStore = create((set, get) => ({
   isAuthenticated: () => Boolean(get().user),
 
   init: async () => {
-    if (!getToken()) {
+    // A stored refresh token alone is enough to restore a session: the API client
+    // trades it for a fresh access token on the first authenticated request.
+    if (!getToken() && !getRefreshToken()) {
       set({ status: 'anonymous', user: null })
       return
     }
@@ -29,7 +38,7 @@ export const useAuthStore = create((set, get) => ({
       const data = await authAPI.me()
       set({ user: data.user, status: 'authenticated', error: null })
     } catch {
-      setToken(null)
+      clearSession()
       set({ user: null, status: 'anonymous' })
     }
   },
@@ -38,7 +47,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSubmitting: true, error: null })
     try {
       const data = await authAPI.login({ email, password })
-      setToken(data.token)
+      setSession({ token: data.token, refreshToken: data.refresh_token })
       set({ user: data.user, status: 'authenticated', isSubmitting: false })
       return data.user
     } catch (error) {
@@ -51,7 +60,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSubmitting: true, error: null })
     try {
       const data = await authAPI.signup({ name, email, password })
-      setToken(data.token)
+      setSession({ token: data.token, refreshToken: data.refresh_token })
       set({ user: data.user, status: 'authenticated', isSubmitting: false })
       return data.user
     } catch (error) {
@@ -60,8 +69,18 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  logout: () => {
-    setToken(null)
+  logout: async () => {
+    const refreshToken = getRefreshToken()
+    // Best effort: revoking server-side stops the refresh token being reused. A
+    // network failure must never leave the user stuck signed in locally.
+    if (refreshToken) {
+      try {
+        await authAPI.logout(refreshToken)
+      } catch {
+        /* ignore */
+      }
+    }
+    clearSession()
     set({ user: null, status: 'anonymous', error: null })
   },
 
@@ -81,6 +100,7 @@ export const useAuthStore = create((set, get) => ({
 
 if (typeof window !== 'undefined') {
   window.addEventListener(UNAUTHORIZED_EVENT, () => {
+    clearSession()
     useAuthStore.setState({ user: null, status: 'anonymous', error: null })
   })
 }

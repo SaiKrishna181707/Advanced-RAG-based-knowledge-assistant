@@ -32,7 +32,15 @@ vi.mock('axios', () => {
   return { default: axios, ...axios }
 })
 
-const { ApiError, UNAUTHORIZED_EVENT, authAPI, getToken, setToken } = await import('./client')
+const {
+  ApiError,
+  UNAUTHORIZED_EVENT,
+  authAPI,
+  getRefreshToken,
+  getToken,
+  setSession,
+  setToken,
+} = await import('./client')
 
 /** A response as axios would hand it to the response interceptor. */
 function ok(data) {
@@ -40,7 +48,7 @@ function ok(data) {
 }
 
 function httpError(status, body) {
-  return { response: { status, data: body } }
+  return { response: { status, data: body }, config: { url: '/documents/', headers: {} } }
 }
 
 /**
@@ -222,5 +230,114 @@ describe('expired sessions', () => {
 
     expect(listener).not.toHaveBeenCalled()
     window.removeEventListener(UNAUTHORIZED_EVENT, listener)
+  })
+})
+
+describe('token refresh', () => {
+  const unauthorized = (code = 'token_expired') => ({
+    success: false,
+    data: null,
+    error: { code, message: 'Your session has expired.' },
+  })
+
+  const refreshOk = (token, refreshToken) => ({
+    success: true,
+    data: { token, refresh_token: refreshToken },
+    error: null,
+  })
+
+  it('refreshes an expired access token and replays the request once', async () => {
+    setSession({ token: 'stale-token', refreshToken: 'refresh-1' })
+    const calls = []
+    harness.request.mockImplementation((config) => {
+      calls.push(config)
+      if (config.url === '/auth/refresh') {
+        return Promise.resolve(ok(refreshOk('fresh-token', 'refresh-2')))
+      }
+      return Promise.resolve(ok({ success: true, data: { user: { id: 'u1' } }, error: null }))
+    })
+
+    const error = httpError(401, unauthorized())
+    const response = await harness.onError(error)
+
+    expect(response.data.data).toEqual({ user: { id: 'u1' } })
+    expect(getToken()).toBe('fresh-token')
+    expect(getRefreshToken()).toBe('refresh-2')
+
+    const refreshCall = calls.find((config) => config.url === '/auth/refresh')
+    expect(refreshCall.data).toEqual({ refresh_token: 'refresh-1' })
+    expect(refreshCall.skipAuthRefresh).toBe(true)
+
+    const replay = calls.find((config) => config.url !== '/auth/refresh')
+    expect(replay.headers.Authorization).toBe('Bearer fresh-token')
+    expect(replay._retried).toBe(true)
+  })
+
+  it('shares a single refresh between concurrent expiries', async () => {
+    setSession({ token: 'stale-token', refreshToken: 'refresh-1' })
+    let refreshCalls = 0
+    harness.request.mockImplementation((config) => {
+      if (config.url === '/auth/refresh') {
+        refreshCalls += 1
+        return Promise.resolve(ok(refreshOk('fresh-token', 'refresh-2')))
+      }
+      return Promise.resolve(ok({ success: true, data: { ok: true }, error: null }))
+    })
+
+    await Promise.all([
+      harness.onError(httpError(401, unauthorized(), { url: '/documents/', headers: {} })),
+      harness.onError(httpError(401, unauthorized(), { url: '/conversations/', headers: {} })),
+    ])
+
+    expect(refreshCalls).toBe(1)
+  })
+
+  it('signs out when the refresh token is refused', async () => {
+    setSession({ token: 'stale-token', refreshToken: 'revoked-refresh' })
+    const listener = vi.fn()
+    window.addEventListener(UNAUTHORIZED_EVENT, listener)
+    harness.request.mockRejectedValue(
+      httpError(401, { success: false, data: null, error: { code: 'refresh_token_reused' } }),
+    )
+
+    const error = await rejected(harness.onError(httpError(401, unauthorized())))
+
+    expect(getToken()).toBeNull()
+    expect(getRefreshToken()).toBeNull()
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(error.status).toBe(401)
+    window.removeEventListener(UNAUTHORIZED_EVENT, listener)
+  })
+
+  it('never treats a failed login as an expired session', async () => {
+    const listener = vi.fn()
+    window.addEventListener(UNAUTHORIZED_EVENT, listener)
+
+    const error = await rejected(
+      harness.onError(
+        httpError(
+          401,
+          { success: false, data: null, error: { code: 'unauthenticated', message: 'That email and password combination is not correct.' } },
+          { url: '/auth/login', headers: {} },
+        ),
+      ),
+    )
+
+    expect(harness.request).not.toHaveBeenCalled()
+    expect(listener).not.toHaveBeenCalled()
+    expect(error.message).toMatch(/not correct/)
+    window.removeEventListener(UNAUTHORIZED_EVENT, listener)
+  })
+
+  it('sends the refresh token to a real refresh request and stores the pair', async () => {
+    setSession({ token: 'stale-token', refreshToken: 'refresh-1' })
+    harness.request.mockResolvedValue(ok(refreshOk('fresh-token', 'refresh-2')))
+
+    await expect(authAPI.refresh('refresh-1')).resolves.toEqual({
+      token: 'fresh-token',
+      refresh_token: 'refresh-2',
+    })
+    // The helper does not store by itself; the interceptor owns persistence.
+    expect(getToken()).toBe('stale-token')
   })
 })

@@ -39,22 +39,49 @@ export class ApiError extends Error {
 }
 
 const TOKEN_KEY = 'albatross.token'
+const REFRESH_KEY = 'albatross.refresh'
 
-export function getToken() {
+function readStored(key) {
   try {
-    return window.localStorage.getItem(TOKEN_KEY)
+    return window.localStorage.getItem(key)
   } catch {
     return null
   }
 }
 
-export function setToken(token) {
+function writeStored(key, value) {
   try {
-    if (token) window.localStorage.setItem(TOKEN_KEY, token)
-    else window.localStorage.removeItem(TOKEN_KEY)
+    if (value) window.localStorage.setItem(key, value)
+    else window.localStorage.removeItem(key)
   } catch {
     /* ignore */
   }
+}
+
+export function getToken() {
+  return readStored(TOKEN_KEY)
+}
+
+export function setToken(token) {
+  writeStored(TOKEN_KEY, token)
+}
+
+export function getRefreshToken() {
+  return readStored(REFRESH_KEY)
+}
+
+export function setRefreshToken(token) {
+  writeStored(REFRESH_KEY, token)
+}
+
+export function setSession({ token, refreshToken } = {}) {
+  setToken(token)
+  setRefreshToken(refreshToken)
+}
+
+export function clearSession() {
+  setToken(null)
+  setRefreshToken(null)
 }
 
 /** Reject with an ApiError - the shape every caller handles. */
@@ -65,6 +92,8 @@ export function apiError(message, options) {
 export const authAPI = {
   signup: vi.fn(),
   login: vi.fn(),
+  refresh: vi.fn(),
+  logout: vi.fn(),
   me: vi.fn(),
   session: vi.fn(),
   updateProfile: vi.fn(),

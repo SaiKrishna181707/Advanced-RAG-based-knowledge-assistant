@@ -296,8 +296,9 @@ the expected answer length (the default is 2048) and set `LLM_REASONING_EFFORT`.
 
 ## MongoDB architecture
 
-Database: `MONGODB_DATABASE` (default `albatross`). MongoDB holds all
-application state; the vector index is derived and rebuildable.
+Database: `MONGODB_DB_NAME` (default `albatross`; `MONGODB_DATABASE` is accepted
+as a legacy alias). MongoDB holds all application state; the vector index is
+derived and rebuildable.
 
 | Collection | Holds | Isolation key |
 |-----------|-------|---------------|
@@ -344,13 +345,22 @@ so query construction is not scattered across routes.
 
 - **Email + password.** Passwords are hashed with Werkzeug's `scrypt` (salted,
   memory-hard). Plaintext is never stored and never logged.
-- **JWT sessions.** HS256 tokens signed with `JWT_SECRET`, sent as
-  `Authorization: Bearer <token>`, valid for `JWT_EXPIRES_HOURS` (default 168 h).
-  The frontend stores the token in `localStorage` and clears it on any `401`.
+- **Short access tokens + rotating refresh tokens.** The access token is an HS256
+  JWT signed with `JWT_SECRET`, sent as `Authorization: Bearer <token>` and valid
+  for `JWT_ACCESS_TTL_MINUTES` (default 30). A longer refresh token, signed with
+  the separate `JWT_REFRESH_SECRET`, is exchanged at `POST /api/auth/refresh` for
+  a new pair. Each refresh token carries a `jti` (its `_id`) and a session
+  `family`; using one rotates it, and replaying an already-revoked token is
+  treated as theft and revokes the whole family. Refresh tokens are stored
+  server-side so logout and password changes can revoke them, and a TTL index
+  reclaims expired rows. Both tokens live in `localStorage`; the API client
+  refreshes transparently once on a `401` and signs the user out if that fails.
 - **Protected by default.** Only signup, login and the public metadata endpoints
-  (`/api/health`, `/api/plans`) are unauthenticated. Every other route is
-  wrapped in `@require_auth`, which resolves the token to a user document and
-  attaches it to the request.
+  (`/api/health`, `/api/plans`) are unauthenticated, along with the refresh and
+  logout endpoints that exist precisely for sessions that have already lapsed or
+  are being ended. Every other route is wrapped in `@require_auth`, which resolves
+  the token to a user document and attaches it to the request. Refresh tokens are
+  never accepted as access tokens, or vice versa.
 - **Ownership is enforced server-side, on every query.** Repositories take
   `user_id` as a required parameter and filter on it, so changing an ID in a
   request body or URL cannot reach another account's data. A resource that
@@ -510,11 +520,19 @@ Open `http://localhost:5173`. The Vite dev server proxies `/api` to
 
 ### MongoDB without a local install
 
+Local development only. Production runs on MongoDB Atlas - see
+[Deployment](#deployment).
+
 ```bash
 docker run -d --name albatross-mongo -p 27017:27017 mongo:7
 # backend/.env
 MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=albatross
 ```
+
+The backend refuses to start when `APP_ENV=production` and `MONGODB_URI` points
+at `localhost` / `127.0.0.1` / `::1`, so the Docker database cannot silently
+become the production database.
 
 ---
 
@@ -526,10 +544,13 @@ MONGODB_URI=mongodb://localhost:27017
 |----------|---------|---------|
 | `APP_ENV` | `development` | `production` enables stricter startup checks |
 | `FLASK_SECRET_KEY` | - | Flask session secret. **Required in production** |
-| `JWT_SECRET` | falls back to `FLASK_SECRET_KEY` | Signs auth tokens |
-| `JWT_EXPIRES_HOURS` | `168` | Token lifetime |
+| `JWT_SECRET` | falls back to `FLASK_SECRET_KEY` | Signs access tokens. **Required in production** |
+| `JWT_REFRESH_SECRET` | falls back to `JWT_SECRET` | Signs refresh tokens. **Required in production**; set it to a different value |
+| `JWT_ACCESS_TTL_MINUTES` | `30` | Access-token lifetime |
+| `JWT_REFRESH_TTL_DAYS` | `30` | Refresh-token lifetime |
+| `JWT_EXPIRES_HOURS` | - | Deprecated. Overrides the access TTL when set above `0` |
 | `MONGODB_URI` | - | **Required.** Atlas SRV string or `mongodb://localhost:27017` |
-| `MONGODB_DATABASE` | `albatross` | Database name |
+| `MONGODB_DB_NAME` | `albatross` | Database name (`MONGODB_DATABASE` also accepted) |
 | `MONGODB_TIMEOUT_MS` | `5000` | Server-selection timeout |
 | `GROQ_API_KEY` | - | **Required for answers** |
 | `GROQ_MODEL` | `openai/gpt-oss-120b` | Preferred model; falls back automatically |
@@ -603,9 +624,17 @@ All responses use one envelope:
 | `GET` | `/api/health` | API, database, vector index and LLM status |
 | `GET` | `/api/plans` | Plan catalogue and billing mode |
 | `POST` | `/api/auth/signup` | Create an account |
-| `POST` | `/api/auth/login` | Obtain a token |
+| `POST` | `/api/auth/login` | Obtain an access + refresh token pair |
+| `POST` | `/api/auth/refresh` | Exchange a refresh token for a new pair (rotates it) |
+| `POST` | `/api/auth/logout` | Revoke one session family, or every session with `all_devices` |
 
 ### Authentication - `/api/auth`
+
+`signup`, `login` and `refresh` return
+`{ token, token_type, expires_in, refresh_token, refresh_expires_in, user }`.
+`refresh` and `logout` are forgiving by design: an unusable or already-revoked
+refresh token returns `401` (or `200` for logout) rather than a stack trace, and
+replaying a rotated token revokes the whole family.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -705,6 +734,10 @@ LLM on Groq.**
 Indexes are created on first boot; no manual setup is needed. Use a database
 name (`albatross`) that is not shared with anything else.
 
+Set `MONGODB_URI` to the Atlas SRV string and `MONGODB_DB_NAME=albatross`. The
+API refuses to boot in production against a loopback URI, so a leftover Docker
+value fails loudly at startup instead of quietly serving local data.
+
 ### 2. Backend on Render
 
 Use the blueprint in `render.yaml` (New -> Blueprint) or create a web service
@@ -720,9 +753,10 @@ Set the secrets in the dashboard (never in git):
 ```
 FLASK_SECRET_KEY  (generate)
 JWT_SECRET        (generate)
+JWT_REFRESH_SECRET (generate; must differ from JWT_SECRET)
 GROQ_API_KEY      (console.groq.com/keys)
 MONGODB_URI       (Atlas)
-MONGODB_DATABASE  albatross
+MONGODB_DB_NAME   albatross
 CORS_ORIGINS      https://<your-app>.vercel.app
 GROQ_MODEL        openai/gpt-oss-120b
 ```
@@ -749,9 +783,10 @@ resolve on a hard refresh, and marks hashed assets immutable.
 - `APP_ENV=production` (enables the strict startup checks).
 - `CORS_ORIGINS` set to the exact frontend origin(s). `*` is rejected in
   production and logged as a startup problem.
-- `FLASK_SECRET_KEY` and `JWT_SECRET` are real random values, not the
-  placeholders from `.env.example`.
-- `MONGODB_URI` points at Atlas, not localhost.
+- `FLASK_SECRET_KEY`, `JWT_SECRET` and `JWT_REFRESH_SECRET` are real random
+  values, not the placeholders from `.env.example`, and the two JWT secrets
+  differ.
+- `MONGODB_URI` points at Atlas, not localhost. Startup fails otherwise.
 - `/api/health` reports every subsystem as reachable before you announce the URL.
 
 No URL is hardcoded anywhere: the frontend reads `VITE_API_URL`, and the backend
@@ -765,6 +800,7 @@ reads `CORS_ORIGINS`, so the same build moves between environments.
 |------|---------|
 | Passwords | Werkzeug `scrypt`, salted; plaintext never stored or logged |
 | Sessions | HS256 JWT signed with `JWT_SECRET`, verified on every request |
+| Refresh tokens | Separate `JWT_REFRESH_SECRET`, `jti`-identified and stored server-side; rotating on use, with replay revoking the session family |
 | Authorization | `@require_auth` on all non-public routes; `user_id` is a required repository argument |
 | Cross-tenant reads | Not expressible: every query is scoped by `user_id`; foreign IDs return `404` |
 | File uploads | Extension allow-list, size limit, magic-byte verification, DOCX zip check, generated storage names |
@@ -802,7 +838,7 @@ Document contents, passwords, tokens and API keys are never written to the log.
 
 ## Testing
 
-**Backend** - `pytest`, 113 tests:
+**Backend** - `pytest`, 132 tests:
 
 ```bash
 cd backend
@@ -810,16 +846,23 @@ pip install -r requirements.txt
 pytest tests -q
 ```
 
-Coverage includes authentication (hashing, token issue/verify, rejection of a
-token signed with another secret), authorization (a second user cannot read,
-modify or delete the first user's documents, conversations, collections or
-chunks), upload validation (`415` for unsupported types, duplicate detection,
-size limits), the ingestion pipeline, retrieval (fusion ordering, metadata
-filtering, dedup), chat (grounding, citations, incomplete-scope notice,
-follow-ups) and the plan catalogue. Tests needing MongoDB use a disposable test
-database; no test asserts trivial behaviour.
+The suite runs against a real MongoDB (indexes, aggregations and ownership
+filters are the parts most worth testing, and mocking them would test nothing)
+but pins `MONGODB_DB_NAME=albatross_test` and drops it before and after the run,
+asserting at startup that it is not pointed at the development database.
 
-**Frontend** - `vitest` + Testing Library, 64 tests:
+Coverage includes authentication (hashing, token issue/verify, rejection of a
+token signed with another secret), refresh tokens (rotation, replay revoking the
+family, refresh/access tokens being mutually unusable, logout, logout-all,
+revocation on password change and account deletion), authorization (a second
+user cannot read, modify or delete the first user's documents, conversations,
+collections, chunks, usage or subscription), upload validation (`415` for
+unsupported types, duplicate detection, size limits), the ingestion pipeline,
+retrieval (fusion ordering, metadata filtering, dedup), chat (grounding,
+citations, incomplete-scope notice, follow-ups) and the plan catalogue. No test
+asserts trivial behaviour.
+
+**Frontend** - `vitest` + Testing Library, 78 tests:
 
 ```bash
 cd frontend
@@ -829,18 +872,41 @@ npm test
 Coverage includes the landing page (hero, six steps, pricing, FAQ, fallback when
 the plan fetch fails), routing and protected routes (an anonymous visitor cannot
 reach any `/app/*` route, a signed-in user is bounced away from `/login`), the
-API contract layer (envelope unwrapping, error classification, `401` handling),
+API contract layer (envelope unwrapping, error classification, `401` handling,
+single-flight token refresh and replay, refusing to treat a failed login as an
+expired session), the auth flow (sign in, sign up, session restore from a refresh
+token, and sign out that revokes server-side but still clears locally when the
+API is unreachable),
 the chat store (delta assembly, citation normalisation across chunk boundaries,
 retry and regenerate), the message renderer (markdown, tables, citation click
 targets, feedback, error states) and citation helpers.
 
-Build and type checks:
+Build (this is also the type check - Vite fails the build on a type error; there
+is no separate linter configured):
 
 ```bash
 cd frontend
-npm run build      # production build
-npm run check      # lint + typecheck
+npm run build      # production build + type check
 ```
+
+### End-to-end smoke test
+
+The suite above stubs the answer model so it stays deterministic and offline. To
+check the parts a stub cannot reach - retrieval feeding context into a real
+provider, and the citations that come back pointing at real chunks - there is a
+script that drives the whole product against a live `GROQ_API_KEY`:
+
+```bash
+cd backend
+.\venv\Scripts\python.exe scripts\e2e_smoke.py    # Linux/macOS: python scripts/e2e_smoke.py
+```
+
+It walks signup, login, refresh rotation, upload, ingestion, all three search
+modes, a grounded answer with citations, conversation persistence, usage
+metering and logout, then has a second tenant attempt to read, search, modify
+and delete the first tenant's data. It runs against its own throwaway database
+(`albatross_e2e`, dropped before and after) so it never touches development
+data, and exits non-zero if any check fails.
 
 ---
 

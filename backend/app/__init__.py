@@ -147,6 +147,17 @@ def _prepare_database() -> None:
 
 
 def _warn_about_configuration() -> None:
+    fatal = settings.production_config_errors()
+    if fatal:
+        # Refuse to serve rather than run a production deployment against a
+        # loopback database or without usable secrets.
+        for problem in fatal:
+            logger.critical(problem, extra={"event": "configuration_error"})
+        raise RuntimeError(
+            "ALBATROSS cannot start with this production configuration: "
+            + " ".join(fatal)
+        )
+
     for problem in settings.startup_problems():
         logger.warning(problem, extra={"event": "configuration_warning"})
 

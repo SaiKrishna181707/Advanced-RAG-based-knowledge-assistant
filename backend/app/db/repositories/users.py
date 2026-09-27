@@ -125,7 +125,17 @@ def delete_user(db, user_id) -> bool:
         oid = ObjectId(str(user_id))
     except Exception:
         return False
-    for collection in ("documents", "chunks", "collections", "conversations", "messages", "activity", "feedback", "usage"):
+    for collection in (
+        "documents",
+        "chunks",
+        "collections",
+        "conversations",
+        "messages",
+        "activity",
+        "feedback",
+        "usage",
+        "refresh_tokens",
+    ):
         db[collection].delete_many({"user_id": oid})
     return db.users.delete_one({"_id": oid}).deleted_count == 1
 

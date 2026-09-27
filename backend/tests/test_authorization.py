@@ -237,3 +237,54 @@ def test_requests_without_a_token_are_rejected_globally(client):
     for method, path in endpoints:
         response = getattr(client, method)(path, json={})
         assert response.status_code == 401, f"{method.upper()} {path} was public"
+
+
+def test_usage_and_limits_are_per_account(client, make_user, wait_for_ready):
+    """One account's uploads and questions must never move another's meters."""
+    alice, _alice_user, _ = make_user()
+    bob, _bob_user, _ = make_user()
+
+    document_id = _upload(client, alice, "alice-big.txt", "A" * 5000)
+    wait_for_ready(alice, document_id)
+
+    alice_usage = client.get("/api/me/usage", headers=alice).get_json()["data"]["usage"]
+    bob_usage = client.get("/api/me/usage", headers=bob).get_json()["data"]["usage"]
+
+    assert alice_usage["documents"]["used"] == 1
+    assert alice_usage["storage"]["used_bytes"] > 0
+    assert bob_usage["documents"]["used"] == 0
+    assert bob_usage["storage"]["used_bytes"] == 0
+    assert bob_usage["questions"]["used"] == 0
+
+
+def test_changing_one_plan_does_not_change_another_account(client, make_user):
+    alice, _alice_user, _ = make_user()
+    bob, _bob_user, _ = make_user()
+
+    assert client.post("/api/me/plan", json={"plan": "pro"}, headers=alice).status_code == 200
+
+    alice_plan = client.get("/api/me/usage", headers=alice).get_json()["data"]["usage"]
+    bob_plan = client.get("/api/me/usage", headers=bob).get_json()["data"]["usage"]
+
+    assert alice_plan["plan"] == "pro"
+    assert bob_plan["plan"] == "free"
+    assert bob_plan["documents"]["limit"] != alice_plan["documents"]["limit"]
+
+
+def test_analytics_counts_only_the_callers_corpus(client, make_user, wait_for_ready):
+    alice, _alice_user, _ = make_user()
+    bob, _bob_user, _ = make_user()
+
+    document_id = _upload(client, alice, "alice-corpus.txt", "Alice keeps a private corpus.")
+    wait_for_ready(alice, document_id)
+
+    alice_analytics = client.get("/api/analytics/", headers=alice).get_json()["data"]
+    bob_analytics = client.get("/api/analytics/", headers=bob).get_json()["data"]
+
+    assert alice_analytics["totals"]["documents"] == 1
+    assert bob_analytics["totals"]["documents"] == 0
+
+    alice_overview = client.get("/api/me/overview", headers=alice).get_json()["data"]
+    bob_overview = client.get("/api/me/overview", headers=bob).get_json()["data"]
+    assert alice_overview["counts"]["documents"] == 1
+    assert bob_overview["counts"]["documents"] == 0

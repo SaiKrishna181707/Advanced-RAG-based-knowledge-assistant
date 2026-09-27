@@ -4,6 +4,8 @@ __pycache__/
 *.pyo
 venv/
 .env
+.env.*
+!.env.example
 *.db
 *.db-journal
 
@@ -15,6 +17,12 @@ backend/uploads/
 node_modules/
 dist/
 .env.local
+
+# Test & tooling scratch
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
 
 # OS
 .DS_Store
