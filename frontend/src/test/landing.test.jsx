@@ -84,7 +84,7 @@ describe('landing page', () => {
     const { container } = renderApp('/')
 
     await screen.findByRole('heading', {
-      name: /start free\. move up when your knowledge base grows\./i,
+      name: /transparent plans/i,
     })
     const pricing = container.querySelector('#pricing')
     expect(pricing).not.toBeNull()
@@ -100,7 +100,7 @@ describe('landing page', () => {
 
   it('advertises only entitlements the product actually enforces', async () => {
     const { container } = renderApp('/')
-    await screen.findByRole('heading', { name: /start free/i })
+    await screen.findByRole('heading', { name: /transparent plans/i })
 
     const pricing = container.querySelector('#pricing')
     // Collaboration and queueing are roadmap items, not shipped features.
@@ -114,7 +114,7 @@ describe('landing page', () => {
 
   it('flags the most popular plan without hiding the others', async () => {
     const { container } = renderApp('/')
-    await screen.findByRole('heading', { name: /start free/i })
+    await screen.findByRole('heading', { name: /transparent plans/i })
 
     const pricing = container.querySelector('#pricing')
     expect(within(pricing).getByText(/most popular/i)).toBeInTheDocument()
@@ -122,7 +122,7 @@ describe('landing page', () => {
 
   it('says plainly that billing is not connected', async () => {
     const { container } = renderApp('/')
-    await screen.findByRole('heading', { name: /start free/i })
+    await screen.findByRole('heading', { name: /transparent plans/i })
 
     const pricing = container.querySelector('#pricing')
     expect(within(pricing).getByText(/billing is not connected yet/i)).toBeInTheDocument()
@@ -134,7 +134,7 @@ describe('landing page', () => {
     renderApp('/')
 
     // The section must still render rather than collapsing the page.
-    expect(await screen.findByRole('heading', { name: /start free/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /transparent plans/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Pro' })).toBeInTheDocument()
   })
 
@@ -142,7 +142,7 @@ describe('landing page', () => {
     renderApp('/')
     await screen.findByRole('heading', { level: 1 })
 
-    const closing = screen.getByRole('region', { name: /ask your documents something/i })
+    const closing = screen.getByRole('region', { name: /stop searching/i })
     expect(within(closing).getByRole('link', { name: /get started/i })).toHaveAttribute(
       'href',
       '/signup',

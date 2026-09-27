@@ -1,54 +1,67 @@
 import { Link } from 'react-router-dom'
 import { BrandMark } from '../layout/Brand'
-
-const LINKS = [
-  { href: '#product', label: 'Why ALBATROSS' },
-  { href: '#how-it-works', label: 'How it works' },
-  { href: '#pricing', label: 'Pricing' },
-]
+import { Github, Twitter, Linkedin } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-line bg-canvas py-12 px-5 sm:px-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-4 sm:max-w-sm">
-          <div className="flex items-center gap-3">
-            <BrandMark className="h-6 w-6 text-ink" />
-            <span className="text-base font-bold tracking-tight text-ink">ALBATROSS</span>
+    <footer className="border-t border-line/40 bg-surface/50 pb-12 pt-20">
+      <div className="mx-auto w-full max-w-6xl px-6">
+        <div className="grid gap-12 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <Link to="/" className="inline-flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <BrandMark className="h-8 w-8 text-accent" />
+              <span className="font-semibold tracking-[0.16em] text-ink text-xl">
+                ALBATROSS
+              </span>
+            </Link>
+            <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted">
+              Document intelligence and grounded answers, cited back to your own sources. 
+              Built for teams who need to verify every claim.
+            </p>
+            <div className="mt-8 flex gap-5">
+              <a href="https://github.com/SaiKrishna181707/Advanced-RAG-based-knowledge-assistant" className="text-muted hover:text-ink transition-colors">
+                <span className="sr-only">GitHub</span>
+                <Github className="h-5 w-5" />
+              </a>
+              <span className="text-muted cursor-not-allowed">
+                <span className="sr-only">Twitter</span>
+                <Twitter className="h-5 w-5" />
+              </span>
+              <span className="text-muted cursor-not-allowed">
+                <span className="sr-only">LinkedIn</span>
+                <Linkedin className="h-5 w-5" />
+              </span>
+            </div>
           </div>
-          <p className="text-sm leading-relaxed text-muted">
-            Document intelligence and grounded answers, cited back to your own sources.
-          </p>
+
+          <div>
+            <h3 className="text-sm font-semibold text-ink">Product</h3>
+            <ul className="mt-6 space-y-4">
+              <li><a href="#how-it-works" className="text-sm text-muted hover:text-accent transition-colors">How it works</a></li>
+              <li><a href="#pricing" className="text-sm text-muted hover:text-accent transition-colors">Pricing</a></li>
+              <li><span className="text-sm text-muted cursor-not-allowed">Changelog</span></li>
+              <li><a href="https://github.com/SaiKrishna181707/Advanced-RAG-based-knowledge-assistant" className="text-sm text-muted hover:text-accent transition-colors">Documentation</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-ink">Legal & Privacy</h3>
+            <ul className="mt-6 space-y-4">
+              <li><span className="text-sm text-muted cursor-not-allowed">Privacy Policy</span></li>
+              <li><span className="text-sm text-muted cursor-not-allowed">Terms of Service</span></li>
+              <li><span className="text-sm text-muted cursor-not-allowed">Data Security</span></li>
+            </ul>
+          </div>
         </div>
 
-        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-8 gap-y-4">
-          {LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted transition-colors hover:text-ink"
-            >
-              {link.label}
-            </a>
-          ))}
-          <Link
-            to="/login"
-            className="text-sm font-medium text-muted transition-colors hover:text-ink"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm font-medium text-muted transition-colors hover:text-ink"
-          >
-            Create account
-          </Link>
-        </nav>
-      </div>
-
-      <div className="mx-auto mt-12 flex w-full max-w-6xl flex-col items-center justify-between gap-4 border-t border-line pt-8 sm:flex-row text-xs text-muted">
-        <p>&copy; {new Date().getFullYear()} ALBATROSS</p>
-        <p>Documents stay in your account. Retrieval is scoped to you on every request.</p>
+        <div className="mt-20 flex flex-col items-center justify-between gap-6 border-t border-line/40 pt-8 sm:flex-row">
+          <p className="text-sm text-muted">
+            &copy; {new Date().getFullYear()} ALBATROSS. All rights reserved.
+          </p>
+          <p className="text-xs text-muted/60">
+            Documents stay in your account. Retrieval is scoped to you on every request.
+          </p>
+        </div>
       </div>
     </footer>
   )
