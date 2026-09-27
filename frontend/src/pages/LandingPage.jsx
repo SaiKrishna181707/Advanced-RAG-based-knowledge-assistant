@@ -2,12 +2,7 @@
  * Public product landing page.
  *
  * Route: /
- * A signed-in visitor is redirected to the dashboard by LandingGate in App.jsx,
- * so this page is only ever shown to visitors.
- *
- * The entire marketing page uses a dark palette scoped via the
- * .albatross-landing wrapper class, preventing the app-wide light theme from
- * leaking into the marketing page.
+ * A signed-in visitor is redirected to the dashboard by LandingGate in App.jsx.
  */
 import { useEffect } from 'react'
 import LandingNav from '../components/landing/LandingNav'
@@ -25,22 +20,14 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="albatross-landing">
+    <div className="flex min-h-dvh flex-col bg-canvas text-ink">
       <LandingNav />
-      <main>
+      <main className="flex-1">
         <Hero />
-        <Reveal>
-          <Benefits />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <Workflow />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <Pricing />
-        </Reveal>
-        <Reveal>
-          <FinalCta />
-        </Reveal>
+        <Reveal delay={0.05}><Benefits /></Reveal>
+        <Reveal delay={0.05}><Workflow /></Reveal>
+        <Reveal delay={0.05}><Pricing /></Reveal>
+        <Reveal delay={0.05}><FinalCta /></Reveal>
       </main>
       <Footer />
     </div>

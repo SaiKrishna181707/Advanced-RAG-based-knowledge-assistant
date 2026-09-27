@@ -9,131 +9,45 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer
-      style={{
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        background: '#0a0a0f',
-        padding: '40px 20px',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '72rem',
-          width: '100%',
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-        }}
-        className="sm:!flex-row sm:!items-center sm:!justify-between"
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span
-            style={{
-              width: '28px',
-              height: '28px',
-              background: '#f4f0e8',
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <BrandMark className="h-4 w-4 text-[#111117]" />
-          </span>
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: '14px',
-              letterSpacing: '0.08em',
-              color: '#f5f5f7',
-            }}
-          >
-            ALBATROSS
-          </span>
-          <span
-            className="hidden sm:inline"
-            style={{
-              fontSize: '12px',
-              color: 'rgba(255,255,255,0.4)',
-            }}
-          >
+    <footer className="border-t border-line bg-canvas py-12 px-5 sm:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:max-w-sm">
+          <div className="flex items-center gap-3">
+            <BrandMark className="h-6 w-6 text-ink" />
+            <span className="text-base font-bold tracking-tight text-ink">ALBATROSS</span>
+          </div>
+          <p className="text-sm leading-relaxed text-muted">
             Document intelligence and grounded answers, cited back to your own sources.
-          </span>
+          </p>
         </div>
 
-        <nav
-          aria-label="Footer"
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: '20px',
-            rowGap: '8px',
-          }}
-        >
+        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-8 gap-y-4">
           {LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              style={{
-                fontSize: '14px',
-                color: 'rgba(255,255,255,0.45)',
-                textDecoration: 'none',
-                transition: 'color 0.15s ease',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#f5f5f7' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)' }}
+              className="text-sm font-medium text-muted transition-colors hover:text-ink"
             >
               {link.label}
             </a>
           ))}
           <Link
             to="/login"
-            style={{
-              fontSize: '14px',
-              color: 'rgba(255,255,255,0.45)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#f5f5f7' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)' }}
+            className="text-sm font-medium text-muted transition-colors hover:text-ink"
           >
             Sign in
           </Link>
           <Link
             to="/signup"
-            style={{
-              fontSize: '14px',
-              color: 'rgba(255,255,255,0.45)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#f5f5f7' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)' }}
+            className="text-sm font-medium text-muted transition-colors hover:text-ink"
           >
             Create account
           </Link>
         </nav>
       </div>
 
-      <div
-        style={{
-          maxWidth: '72rem',
-          width: '100%',
-          margin: '32px auto 0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          paddingTop: '20px',
-          fontSize: '12px',
-          color: 'rgba(255,255,255,0.35)',
-        }}
-        className="sm:!flex-row sm:!items-center sm:!justify-between"
-      >
-        <p>{new Date().getFullYear()} ALBATROSS</p>
+      <div className="mx-auto mt-12 flex w-full max-w-6xl flex-col items-center justify-between gap-4 border-t border-line pt-8 sm:flex-row text-xs text-muted">
+        <p>&copy; {new Date().getFullYear()} ALBATROSS</p>
         <p>Documents stay in your account. Retrieval is scoped to you on every request.</p>
       </div>
     </footer>

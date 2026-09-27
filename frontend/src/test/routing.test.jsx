@@ -32,7 +32,7 @@ describe('anonymous visitors', () => {
     renderApp('/')
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: /everything above the fold/i }),
+      await screen.findByRole('heading', { level: 1, name: /actually searchable/i }),
     ).toBeInTheDocument()
   })
 

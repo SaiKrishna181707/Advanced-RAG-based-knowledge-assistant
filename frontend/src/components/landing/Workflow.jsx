@@ -1,6 +1,3 @@
-/**
- * The pipeline in three steps — dark landing palette.
- */
 import { Section, SectionIntro } from './Section'
 
 const STEPS = [
@@ -23,52 +20,23 @@ const STEPS = [
 
 export default function Workflow() {
   return (
-    <Section id="how-it-works" tone="elevated" divider>
+    <Section id="how-it-works" tone="surface" divider>
       <SectionIntro
         eyebrow="How it works"
         title="From upload to cited answer."
         lede="Three steps, and nothing about the answer is hidden from you."
       />
 
-      <ol
-        style={{
-          marginTop: '48px',
-          display: 'grid',
-          gap: '32px',
-        }}
-        className="sm:!grid-cols-3"
-      >
+      <ol className="mt-16 grid gap-10 sm:grid-cols-3">
         {STEPS.map((step) => (
-          <li
-            key={step.n}
-            style={{
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-              paddingTop: '20px',
-              listStyle: 'none',
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '11px',
-                fontWeight: 500,
-                letterSpacing: '0.2em',
-                color: '#2dd4bf',
-              }}
-            >
+          <li key={step.n} className="border-t border-line pt-6">
+            <span className="font-mono text-xs font-semibold tracking-widest text-accent">
               {step.n}
             </span>
-            <h3 style={{ marginTop: '10px', fontSize: '14px', fontWeight: 600, color: '#f5f5f7' }}>
+            <h3 className="mt-4 text-base font-semibold tracking-tight text-ink">
               {step.title}
             </h3>
-            <p
-              style={{
-                marginTop: '8px',
-                fontSize: '14px',
-                lineHeight: 1.65,
-                color: 'rgba(255,255,255,0.5)',
-              }}
-            >
+            <p className="mt-2 text-sm leading-relaxed text-muted">
               {step.body}
             </p>
           </li>

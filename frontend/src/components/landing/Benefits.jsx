@@ -1,8 +1,3 @@
-/**
- * What the product actually guarantees, stated once each.
- *
- * Four short claims in a dark landing palette.
- */
 import { Section, SectionIntro } from './Section'
 
 const BENEFITS = [
@@ -24,50 +19,26 @@ const BENEFITS = [
   },
 ]
 
+/**
+ * Clean grid of benefits using standard Tailwind semantic tokens.
+ */
 export default function Benefits() {
   return (
     <Section id="product" divider>
-      <div
-        style={{
-          display: 'grid',
-          gap: '40px',
-          gridTemplateColumns: 'repeat(1, 1fr)',
-        }}
-        className="lg:!grid-cols-[0.85fr_1.15fr]"
-      >
+      <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <SectionIntro
           eyebrow="Why ALBATROSS"
           title="The citation is the product."
           lede="A confident sentence is worth little if you cannot check it. Every answer points back to the page it came from."
         />
 
-        <div
-          style={{
-            display: 'grid',
-            gap: '28px',
-            gridTemplateColumns: 'repeat(1, 1fr)',
-          }}
-          className="sm:!grid-cols-2"
-        >
+        <div className="grid gap-8 sm:grid-cols-2 sm:gap-10">
           {BENEFITS.map((benefit) => (
-            <div
-              key={benefit.title}
-              style={{
-                borderTop: '1px solid rgba(255,255,255,0.06)',
-                paddingTop: '16px',
-              }}
-            >
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f5f5f7' }}>
+            <div key={benefit.title} className="border-t border-line pt-5">
+              <h3 className="text-base font-semibold tracking-tight text-ink">
                 {benefit.title}
               </h3>
-              <p
-                style={{
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  lineHeight: 1.65,
-                  color: 'rgba(255,255,255,0.5)',
-                }}
-              >
+              <p className="mt-2 text-sm leading-relaxed text-muted">
                 {benefit.body}
               </p>
             </div>

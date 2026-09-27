@@ -28,8 +28,8 @@ describe('landing page', () => {
     renderApp('/')
 
     const heading = await screen.findByRole('heading', { level: 1 })
-    expect(heading).toHaveTextContent(/everything above the fold/i)
-    expect(screen.getByText(/interface systems/i)).toBeInTheDocument()
+    expect(heading).toHaveTextContent(/actually searchable/i)
+    expect(screen.getByText(/albatross ai assistant/i)).toBeInTheDocument()
     expect(screen.getAllByText('ALBATROSS').length).toBeGreaterThan(0)
   })
 
@@ -168,7 +168,7 @@ describe('landing page', () => {
     expect(await screen.findByText(/welcome back/i)).toBeInTheDocument()
     // The landing copy must not flash for a signed-in user.
     expect(
-      screen.queryByRole('heading', { level: 1, name: /everything above the fold/i }),
+      screen.queryByRole('heading', { level: 1, name: /actually searchable/i }),
     ).not.toBeInTheDocument()
   })
 })

@@ -1,13 +1,7 @@
-/**
- * Pricing — dark landing palette.
- *
- * Plans come from GET /api/plans so the landing page and the server can never
- * disagree about a limit. A local fallback keeps the section readable if the API
- * is unreachable.
- */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
+import clsx from 'clsx'
 import { metaAPI } from '../../api/client'
 import { Section, SectionIntro } from './Section'
 
@@ -83,12 +77,8 @@ export default function Pricing() {
         if (Array.isArray(data?.plans) && data.plans.length) setPlans(data.plans)
         setBilling(data?.billing ?? null)
       })
-      .catch(() => {
-        /* keep the fallback table */
-      })
-    return () => {
-      active = false
-    }
+      .catch(() => {})
+    return () => { active = false }
   }, [])
 
   return (
@@ -99,110 +89,43 @@ export default function Pricing() {
         lede="Plans differ in how much you can store, how many questions you can ask, and how deeply the retriever searches."
       />
 
-      {/* One sheet with three columns */}
-      <div
-        style={{
-          marginTop: '40px',
-          overflow: 'hidden',
-          borderRadius: '14px',
-          border: '1px solid rgba(255,255,255,0.06)',
-          background: '#0f1017',
-        }}
-      >
-        <div
-          style={{ display: 'grid' }}
-          className="lg:!grid-cols-3"
-        >
+      <div className="mt-16 overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+        <div className="grid lg:grid-cols-3">
           {plans.map((plan, index) => (
             <div
               key={plan.key}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '24px',
-                borderTop: index > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                background: plan.highlighted ? 'rgba(45,212,191,0.04)' : 'transparent',
-              }}
-              className={index > 0 ? 'lg:!border-t-0 lg:!border-l lg:!border-l-[rgba(255,255,255,0.06)]' : ''}
+              className={clsx(
+                'flex flex-col p-8',
+                index > 0 && 'border-t border-line lg:border-l lg:border-t-0',
+                plan.highlighted && 'bg-accent/5'
+              )}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f5f5f7' }}>{plan.name}</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-base font-semibold text-ink">{plan.name}</h3>
                 {plan.highlighted && (
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.14em',
-                      color: '#2dd4bf',
-                    }}
-                  >
+                  <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
                     Most popular
                   </span>
                 )}
               </div>
 
-              <p style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span
-                  style={{
-                    fontSize: '30px',
-                    fontWeight: 600,
-                    letterSpacing: '-0.02em',
-                    color: '#f5f5f7',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
+              <p className="mt-4 flex items-baseline gap-1.5">
+                <span className="text-4xl font-bold tracking-tight text-ink tabular-nums">
                   {priceOf(plan)}
                 </span>
                 {Number(plan.price_monthly) > 0 && (
-                  <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>/ month</span>
+                  <span className="text-sm font-medium text-muted">/ month</span>
                 )}
               </p>
 
-              <p
-                style={{
-                  marginTop: '8px',
-                  minHeight: '40px',
-                  fontSize: '14px',
-                  lineHeight: 1.65,
-                  color: 'rgba(255,255,255,0.5)',
-                }}
-              >
+              <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-muted">
                 {plan.tagline}
               </p>
 
-              <ul
-                style={{
-                  marginTop: '20px',
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
-                  paddingTop: '20px',
-                }}
-              >
+              <ul className="mt-8 flex-1 space-y-3.5 border-t border-line pt-8">
                 {(plan.highlights || []).map((highlight) => (
-                  <li
-                    key={highlight}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '10px',
-                      fontSize: '14px',
-                      color: 'rgba(255,255,255,0.5)',
-                    }}
-                  >
-                    <Check
-                      aria-hidden="true"
-                      style={{
-                        width: '14px',
-                        height: '14px',
-                        marginTop: '3px',
-                        flexShrink: 0,
-                        color: '#2dd4bf',
-                      }}
-                    />
+                  <li key={highlight} className="flex items-start gap-3 text-sm text-ink/80">
+                    <Check aria-hidden="true" className="h-5 w-5 shrink-0 text-accent" />
                     <span>{highlight}</span>
                   </li>
                 ))}
@@ -210,41 +133,10 @@ export default function Pricing() {
 
               <Link
                 to="/signup"
-                style={{
-                  marginTop: '24px',
-                  width: '100%',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  borderRadius: '10px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  transition: 'background 0.15s ease',
-                  ...(plan.highlighted
-                    ? { background: '#f4f0e8', color: '#111117' }
-                    : {
-                        background: 'transparent',
-                        color: '#f5f5f7',
-                        border: '1px solid rgba(255,255,255,0.10)',
-                      }),
-                }}
-                onMouseEnter={(e) => {
-                  if (plan.highlighted) {
-                    e.currentTarget.style.background = '#e8e4d8'
-                  } else {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (plan.highlighted) {
-                    e.currentTarget.style.background = '#f4f0e8'
-                  } else {
-                    e.currentTarget.style.background = 'transparent'
-                  }
-                }}
+                className={clsx(
+                  'mt-8 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold shadow-sm transition-all hover:scale-[1.02]',
+                  plan.highlighted ? 'bg-accent text-white hover:bg-accent/90' : 'border border-line bg-surface text-ink hover:bg-raised'
+                )}
               >
                 {plan.cta || `Choose ${plan.name}`}
               </Link>
@@ -252,20 +144,13 @@ export default function Pricing() {
           ))}
         </div>
 
-        <p
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            padding: '16px 24px',
-            fontSize: '12px',
-            lineHeight: 1.65,
-            color: 'rgba(255,255,255,0.5)',
-          }}
-        >
-          <span style={{ fontWeight: 500, color: '#f5f5f7' }}>Billing is not connected yet.</span>{' '}
-          {billing?.note ||
-            'Plans are product-level entitlements. No payment provider is wired up, so nothing is charged.'}{' '}
-          Changing plan from Settings updates your limits immediately and takes no payment.
-        </p>
+        <div className="border-t border-line bg-canvas/50 px-8 py-5">
+          <p className="text-xs leading-relaxed text-muted">
+            <span className="font-semibold text-ink">Billing is not connected yet.</span>{' '}
+            {billing?.note || 'Plans are product-level entitlements. No payment provider is wired up, so nothing is charged.'}{' '}
+            Changing plan from Settings updates your limits immediately and takes no payment.
+          </p>
+        </div>
       </div>
     </Section>
   )

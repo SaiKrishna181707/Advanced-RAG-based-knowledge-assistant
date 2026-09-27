@@ -1,97 +1,62 @@
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
+import ProductPreview from './ProductPreview'
+
 /**
- * Landing hero — full-viewport dark SaaS hero for ALBATROSS.
- *
- * Features:
- * - Full 100svh dark background (#0a0a0f)
- * - Ambient indigo/violet radial glow (upper 30-40%)
- * - "INTERFACE SYSTEMS" eyebrow
- * - Large metallic-gradient "Everything above the fold" headline
- * - Responsive clamp() typography
- * - Centered flex layout with proper header clearance
+ * Landing hero — Minimalist, high-contrast SaaS hero.
  */
-
-const EASE = [0.16, 1, 0.3, 1]
-
 export default function Hero() {
   return (
-    <section
-      className="albatross-hero"
-      style={{
-        position: 'relative',
-        minHeight: '100svh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#0a0a0f',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Ambient glow */}
+    <section className="relative overflow-hidden bg-canvas pt-32 pb-16 sm:pt-40 sm:pb-24">
+      {/* Subtle top glow instead of jarring background gradients */}
       <div
-        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[500px] w-full"
         style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          background: [
-            'radial-gradient(ellipse 55% 50% at 20% 10%, rgba(43,58,143,0.22), transparent 70%)',
-            'radial-gradient(ellipse 55% 50% at 80% 10%, rgba(91,42,134,0.20), transparent 70%)',
-            'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(60,50,140,0.10), transparent 70%)',
-          ].join(', '),
+          background: 'radial-gradient(50% 50% at 50% 0%, rgba(var(--accent) / 0.15) 0%, transparent 100%)',
         }}
+        aria-hidden="true"
       />
 
-      {/* Hero copy — centered in viewport */}
-      <div
-        className="albatross-hero-copy"
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          padding: '0 24px',
-          maxWidth: '1200px',
-          width: '100%',
-        }}
-      >
-        {/* Eyebrow */}
-        <p
-          className="albatross-eyebrow"
-          style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.25em',
-            color: 'rgba(255,255,255,0.45)',
-            marginBottom: '28px',
-          }}
-        >
-          INTERFACE SYSTEMS
-        </p>
+      <div className="relative mx-auto w-full max-w-6xl px-5 sm:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="mb-6 inline-flex items-center rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted shadow-sm">
+            Albatross AI Assistant
+          </p>
 
-        {/* Headline with metallic gradient */}
-        <h1
-          style={{
-            fontSize: 'clamp(52px, 9vw, 138px)',
-            fontWeight: 700,
-            lineHeight: 1.0,
-            letterSpacing: '-0.03em',
-            fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
-            background: 'linear-gradient(180deg, #ffffff 0%, #f2f3f6 45%, #858b96 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            margin: 0,
-            padding: 0,
-            maxWidth: '12ch',
-          }}
-        >
-          Everything above the fold
-        </h1>
+          <h1 className="text-4xl font-bold tracking-tight text-ink sm:text-6xl lg:text-7xl">
+            Your knowledge,
+            <br />
+            <span className="text-muted">actually searchable.</span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted">
+            Upload your documents, ask questions in plain language, and get answers grounded entirely in the sources you already trust.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-canvas shadow-md transition-transform hover:scale-105"
+            >
+              Start building for free
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+            <a
+              href="#how-it-works"
+              className="inline-flex items-center justify-center rounded-full border border-line bg-surface px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-raised"
+            >
+              See how it works
+            </a>
+          </div>
+          <p className="mt-6 text-xs text-muted/70">
+            No credit card required. Free plan includes 25 documents.
+          </p>
+        </div>
+
+        {/* Bring back the Product Preview, it was actually good and grounded the page */}
+        <div id="preview" className="mt-20 scroll-mt-24 sm:mt-24">
+          <ProductPreview />
+        </div>
       </div>
     </section>
   )
