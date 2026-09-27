@@ -125,12 +125,6 @@ export default function Pricing() {
             </div>
           ))}
         </div>
-
-        <p className="mt-10 rounded-2xl bg-surface/50 p-6 text-xs leading-relaxed text-muted/80 ring-1 ring-line/40 text-center max-w-3xl mx-auto">
-          <strong className="font-semibold text-ink">Billing is not connected yet.</strong> Plans
-          are product-level entitlements. No payment provider is wired up, so nothing is charged.
-          Changing plan from Settings updates your limits immediately and takes no payment.
-        </p>
       </div>
     </Section>
   )

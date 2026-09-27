@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 import ProductPreview from './ProductPreview'
 
 /**
@@ -54,12 +55,18 @@ export default function Hero() {
         </div>
 
         {/* Premium glowing wrapper for the Product Preview */}
-        <div id="preview" className="relative mt-20 scroll-mt-24 sm:mt-24">
-          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-br from-accent/30 via-transparent to-accent-ink/20 opacity-50 blur-lg" aria-hidden="true" />
-          <div className="relative rounded-2xl bg-canvas p-1 sm:p-2 border border-white/5 shadow-2xl">
+        <motion.div 
+          id="preview" 
+          className="relative mt-20 scroll-mt-24 sm:mt-24"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        >
+          <div className="absolute -inset-1.5 rounded-[1.25rem] bg-gradient-to-br from-accent/30 via-transparent to-accent-ink/20 opacity-50 blur-xl" aria-hidden="true" />
+          <div className="relative rounded-xl bg-canvas p-1 sm:p-2 border border-white/5 shadow-2xl">
             <ProductPreview />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

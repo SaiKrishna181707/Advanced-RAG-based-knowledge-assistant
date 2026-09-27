@@ -254,18 +254,24 @@ export default function ProductPreview() {
   const View = VIEWS[active]
 
   return (
-    <div className="overflow-hidden rounded-card border border-line bg-surface shadow-lifted">
-      {/* Window chrome: enough to read as the product, not a decorative browser. */}
-      <div className="flex items-center gap-2 border-b border-line bg-raised px-3 py-2">
-        <span className="flex gap-1.5" aria-hidden="true">
-          <span className="h-2 w-2 rounded-full bg-line" />
-          <span className="h-2 w-2 rounded-full bg-line" />
-          <span className="h-2 w-2 rounded-full bg-line" />
-        </span>
-        <span className="mx-auto hidden rounded border border-line bg-surface px-2 py-0.5 font-mono text-2xs text-muted sm:block">
-          albatross.app/chat
-        </span>
-        <span className="ml-auto text-2xs text-muted sm:ml-0">Product preview</span>
+    <div className="overflow-hidden rounded-xl border border-line/50 bg-canvas shadow-2xl transition-transform hover:scale-[1.01] duration-500 ring-1 ring-white/10">
+      {/* Sleek macOS window chrome */}
+      <div className="flex items-center justify-between border-b border-line/40 bg-surface/80 px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-2" aria-hidden="true">
+          <span className="h-3 w-3 rounded-full bg-[#ff5f56] border border-[#e0443e]" />
+          <span className="h-3 w-3 rounded-full bg-[#ffbd2e] border border-[#dea123]" />
+          <span className="h-3 w-3 rounded-full bg-[#27c93f] border border-[#1aab29]" />
+        </div>
+        
+        <div className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center">
+          <span className="rounded-md border border-line/30 bg-canvas/60 px-3 py-1 font-mono text-xs text-muted/80 shadow-sm backdrop-blur-md">
+            albatross.app/workspace
+          </span>
+        </div>
+        
+        <div className="flex items-center opacity-0 sm:opacity-100">
+           <span className="text-xs font-medium text-muted/50">Live Preview</span>
+        </div>
       </div>
 
       <div className="flex">

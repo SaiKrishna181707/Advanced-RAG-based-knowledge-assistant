@@ -7,7 +7,7 @@ const LOGOS = [
   { name: 'Stripe', slug: 'stripe' },
   { name: 'Notion', slug: 'notion' },
   { name: 'Linear', slug: 'linear' },
-  { name: 'OpenAI', slug: 'openai' },
+  { name: 'Figma', slug: 'figma' },
   { name: 'Raycast', slug: 'raycast' },
   { name: 'Anthropic', slug: 'anthropic' },
 ]

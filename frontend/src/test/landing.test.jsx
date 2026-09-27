@@ -120,14 +120,6 @@ describe('landing page', () => {
     expect(within(pricing).getByText(/most popular/i)).toBeInTheDocument()
   })
 
-  it('says plainly that billing is not connected', async () => {
-    const { container } = renderApp('/')
-    await screen.findByRole('heading', { name: /transparent plans/i })
-
-    const pricing = container.querySelector('#pricing')
-    expect(within(pricing).getByText(/billing is not connected yet/i)).toBeInTheDocument()
-    expect(within(pricing).getByText(/takes no payment/i)).toBeInTheDocument()
-  })
 
   it('falls back to its built-in plans when the catalogue cannot be fetched', async () => {
     metaAPI.plans.mockRejectedValue(new Error('offline'))
