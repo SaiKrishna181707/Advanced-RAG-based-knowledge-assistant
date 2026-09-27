@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const items = [
   { label: 'Product', icon: 'cube', href: '#product' },
   { label: 'Solutions', icon: 'layers', href: '#how-it-works' },
-  { label: 'Docs', icon: 'file', href: '#product' },
+  { label: 'Docs', icon: 'file', href: 'https://github.com/SaiKrishna181707/Advanced-RAG-based-knowledge-assistant#readme', external: true },
   { label: 'Pricing', icon: 'tag', href: '#pricing' },
-  { label: 'Changelog', icon: 'clock', href: '#changelog' },
+  { label: 'Changelog', icon: 'clock', href: 'https://github.com/SaiKrishna181707/Advanced-RAG-based-knowledge-assistant/commits/main', external: true },
 ]
 
 function Icon({ name, size = 15 }) {
@@ -38,16 +38,23 @@ export default function AnimatedTopDockHost() {
         </a>
         <nav className="albatross-nav" aria-label="Primary navigation">
           {items.map((item, index) => (
-            <button key={item.label} className={`albatross-nav-item ${index === 0 ? 'is-active' : ''}`} onClick={() => go(item.href)} type="button">
+            <a
+              key={item.label}
+              className={`albatross-nav-item ${index === 0 ? 'is-active' : ''}`}
+              href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noreferrer' : undefined}
+              aria-current={index === 0 ? 'page' : undefined}
+            >
               <Icon name={item.icon} /><span>{item.label}</span>
-            </button>
+            </a>
           ))}
         </nav>
         <div className="albatross-actions">
-          <button className="albatross-signin" type="button" onClick={() => navigate('/login')}>Sign in</button>
-          <button className="albatross-start" type="button" onClick={() => navigate('/signup')}>
+          <Link className="albatross-signin" to="/login">Sign in</Link>
+          <Link className="albatross-start" to="/signup">
             <span>Start building</span><Icon name="arrow" size={14} />
-          </button>
+          </Link>
         </div>
         <button className={`albatross-menu ${mobileOpen ? 'is-open' : ''}`} type="button" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen} onClick={() => setMobileOpen((value) => !value)}>
           <span /><span />
@@ -57,12 +64,18 @@ export default function AnimatedTopDockHost() {
       {mobileOpen && (
         <nav className="albatross-mobile-nav" aria-label="Mobile navigation">
           {items.map((item) => (
-            <button key={item.label} type="button" onClick={() => go(item.href)}>
+            <a
+              key={item.label}
+              href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noreferrer' : undefined}
+              onClick={closeMobile}
+            >
               <Icon name={item.icon} /><span>{item.label}</span>
-            </button>
+            </a>
           ))}
-          <button type="button" onClick={() => navigate('/login')}>Sign in</button>
-          <button className="mobile-cta" type="button" onClick={() => navigate('/signup')}>Start building <Icon name="arrow" size={14} /></button>
+          <Link to="/login" onClick={closeMobile}>Sign in</Link>
+          <Link className="mobile-cta" to="/signup" onClick={closeMobile}>Start building <Icon name="arrow" size={14} /></Link>
         </nav>
       )}
 
