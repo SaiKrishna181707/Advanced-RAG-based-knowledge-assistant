@@ -1,52 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* ============================================================================
+   ALBATROSS design tokens
 
-/* Landing theme: dark command-center treatment. Scoped to the public product shell. */
-.landing-shell {
-  --landing-glow: 45 212 191;
-  background:
-    radial-gradient(circle at 50% -10%, rgb(var(--landing-glow) / 0.07), transparent 34rem),
-    rgb(var(--canvas));
+   Two themes, one set of semantic names. Values are "R G B" triples so Tailwind
+   can apply opacity modifiers. Contrast was checked against WCAG AA: the muted
+   text token is deliberately lighter than a typical "grey on black" so body copy
+   stays readable.
+   ========================================================================= */
+
+:root {
+  --canvas: 250 250 249;
+  --surface: 255 255 255;
+  --raised: 255 255 255;
+  --line: 226 229 235;
+  --ink: 15 23 42;
+  --muted: 88 99 120;
+  --accent: 13 125 112;
+  --accent-ink: 6 78 70;
+  --accent-fg: 255 255 255;
+  --accent-soft: 214 240 236;
+  --positive: 5 122 85;
+  --warning: 161 98 7;
+  --caution: 161 98 7;
+  --danger: 185 28 28;
+  color-scheme: light;
 }
 
-.landing-grid {
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: linear-gradient(to bottom, black 0%, black 46%, transparent 90%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 46%, transparent 90%);
+.dark {
+  --canvas: 8 13 22;
+  --surface: 15 22 34;
+  --raised: 21 30 45;
+  --line: 35 47 68;
+  --ink: 232 238 246;
+  --muted: 150 165 188;
+  --accent: 45 212 191;
+  --accent-ink: 153 246 228;
+  --accent-fg: 4 30 28;
+  --accent-soft: 19 58 58;
+  --positive: 52 211 153;
+  --warning: 251 191 36;
+  --caution: 251 191 36;
+  --danger: 248 113 113;
+  color-scheme: dark;
 }
 
-.landing-noise {
-  opacity: 0.16;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
+@layer base {
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Scrolling is opt-in per surface. The previous build locked body overflow,
+     which made every page unscrollable on small screens. */
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.28);
+  }
+
+  /* Visible, consistent focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--line));
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--muted) / 0.55);
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-.landing-orb {
-  filter: blur(80px);
-  opacity: 0.16;
-  background: radial-gradient(circle, rgb(var(--landing-glow) / 0.7), transparent 68%);
+@layer utilities {
+  /* Infinite logo marquee: track is two copies of the row, so translating
+     exactly -50% hands off seamlessly to the second copy. */
+  @keyframes marquee {
+    from {
+      transform: translateX(0%);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 28s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Fades the marquee row to transparent at both edges instead of a hard
+     clip, so wordmarks don't visibly pop in/out mid-row. */
+  .marquee-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 64px,
+      black calc(100% - 64px),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 64px,
+      black calc(100% - 64px),
+      transparent 100%
+    );
+  }
 }
 
-.landing-orb-two {
-  opacity: 0.09;
-  background: radial-gradient(circle, rgb(91 120 255 / 0.75), transparent 68%);
+@layer components {
+  .card {
+    @apply rounded-card border border-line bg-surface shadow-card;
+  }
+
+  .card-interactive {
+    @apply card transition-colors hover:border-accent/40;
+  }
+
+  .label {
+    @apply block text-xs font-medium text-muted mb-1.5;
+  }
+
+  .input {
+    @apply w-full rounded-input border border-line bg-surface px-3 py-2 text-sm text-ink
+      placeholder:text-muted/70 transition-colors
+      focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-input
+      px-3.5 py-2 text-sm font-medium transition-colors
+      disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-accent-fg hover:brightness-110 active:brightness-95;
+  }
+
+  .btn-secondary {
+    @apply btn border border-line bg-surface text-ink hover:bg-raised;
+  }
+
+  .btn-ghost {
+    @apply btn text-muted hover:bg-raised hover:text-ink;
+  }
+
+  .btn-danger {
+    @apply btn border border-danger/40 text-danger hover:bg-danger/10;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line
+      bg-raised px-2.5 py-1 text-xs font-medium text-muted;
+  }
+
+  /* Layered "ocean chart" motif used behind hero and empty states. Intentionally
+     restrained: a faint grid plus one soft horizon glow. */
+  .chart-grid {
+    background-image:
+      linear-gradient(rgb(var(--line) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.5) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .horizon-glow {
+    background:
+      radial-gradient(60% 55% at 50% 0%, rgb(var(--accent) / 0.16), transparent 70%),
+      radial-gradient(40% 40% at 85% 15%, rgb(var(--accent) / 0.09), transparent 70%);
+  }
+
+  .skeleton {
+    @apply animate-shimmer rounded-md bg-line/70;
+  }
 }
 
-.landing-shell .card,
-.landing-shell .shadow-lifted {
-  box-shadow: 0 24px 80px rgb(0 0 0 / 0.34);
-}
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 
-.landing-shell section {
-  position: relative;
+  /* Long code blocks and wide tables must scroll rather than break the layout. */
+  .prose-albatross {
+    @apply text-sm leading-relaxed text-ink;
+  }
+  .prose-albatross h1 { @apply mt-5 mb-2 text-lg font-semibold; }
+  .prose-albatross h2 { @apply mt-5 mb-2 text-base font-semibold; }
+  .prose-albatross h3 { @apply mt-4 mb-1.5 text-sm font-semibold; }
+  .prose-albatross p { @apply my-2; }
+  .prose-albatross ul { @apply my-2 list-disc space-y-1 pl-5; }
+  .prose-albatross ol { @apply my-2 list-decimal space-y-1 pl-5; }
+  .prose-albatross li > p { @apply my-0; }
+  .prose-albatross a { @apply text-accent underline underline-offset-2; }
+  .prose-albatross strong { @apply font-semibold text-ink; }
+  .prose-albatross blockquote {
+    @apply my-3 border-l-2 border-accent/50 pl-3 text-muted;
+  }
+  .prose-albatross code {
+    @apply rounded bg-raised px-1.5 py-0.5 font-mono text-[0.8125rem];
+  }
+  .prose-albatross pre {
+    @apply my-3 overflow-x-auto rounded-input border border-line bg-raised p-3 text-[0.8125rem];
+  }
+  .prose-albatross pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose-albatross table {
+    @apply my-3 block w-full overflow-x-auto border-collapse text-sm;
+  }
+  .prose-albatross th {
+    @apply border-b border-line px-3 py-2 text-left font-semibold;
+  }
+  .prose-albatross td {
+    @apply border-b border-line/60 px-3 py-2 align-top;
+  }
+  .prose-albatross hr { @apply my-4 border-line; }
+  .prose-albatross .katex-display { @apply my-3 overflow-x-auto overflow-y-hidden; }
 }
-
-.landing-shell .marquee-mask {
-  border-color: rgb(255 255 255 / 0.07);
-}
-
-.landing-shell footer {
-  background: rgb(5 8 12 / 0.75);
-}
+/* Public landing: restrained command-bar system inspired by the supplied reference. */
+.landing-page { overflow-x: clip; }
+.landing-nav-wrap { pointer-events: none; }
+.landing-command-bar, .landing-command-bar * { pointer-events: auto; }
+.landing-command-bar { min-height:58px; padding:6px 7px; border:1px solid rgb(15 23 42 / .08); border-radius:18px; background:rgb(255 255 255 / .82); box-shadow:0 10px 35px rgb(15 23 42 / .06); backdrop-filter:blur(18px) saturate(1.12); transition:box-shadow .3s ease,background .3s ease; }
+.landing-command-bar.is-scrolled { background:rgb(255 255 255 / .96); box-shadow:0 14px 42px rgb(15 23 42 / .10); }
+.landing-brand { padding:7px 9px; border-radius:12px; }
+.landing-brand:hover { background:rgb(15 23 42 / .035); }
+.landing-command-links { border:1px solid rgb(15 23 42 / .06); background:rgb(248 250 252 / .78); border-radius:13px; padding:3px; }
+.landing-command-link { position:relative; display:inline-flex; align-items:center; justify-content:center; min-height:32px; padding:0 13px; border-radius:10px; color:rgb(88 99 120); font-size:12px; font-weight:600; z-index:0; }
+.landing-command-hover { position:absolute; inset:0; z-index:-1; border-radius:10px; background:white; box-shadow:0 2px 8px rgb(15 23 42 / .08); }
+.landing-signin { padding:9px 11px; border-radius:10px; color:rgb(88 99 120); font-size:12px; font-weight:600; }
+.landing-signin:hover { color:rgb(15 23 42); background:rgb(15 23 42 / .035); }
+.landing-start { display:inline-flex; align-items:center; gap:6px; padding:9px 12px; border-radius:11px; background:rgb(15 23 42); color:white; font-size:12px; font-weight:600; box-shadow:0 5px 14px rgb(15 23 42 / .14); transition:transform .2s ease,box-shadow .2s ease; }
+.landing-start:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgb(15 23 42 / .18); }
+.landing-mobile-button { padding:9px; border-radius:11px; color:rgb(88 99 120); }
+.landing-mobile-panel { border:1px solid rgb(15 23 42 / .08); border-radius:16px; background:white; box-shadow:0 18px 50px rgb(15 23 42 / .12); padding:10px; }
+.landing-mobile-link { display:block; border-radius:10px; padding:10px 11px; color:rgb(88 99 120); font-size:14px; font-weight:500; }
+.landing-mobile-link:hover { background:rgb(248 250 252); color:rgb(15 23 42); }
+.landing-hero { background:linear-gradient(180deg,rgb(250 250 249) 0%,rgb(250 250 249) 72%,rgb(247 248 246) 100%); }
+.landing-hero-glow { background:radial-gradient(45% 70% at 50% 0%,rgb(13 125 112 / .10),transparent 72%),radial-gradient(30% 45% at 85% 15%,rgb(56 189 248 / .06),transparent 75%); }
+.landing-hero-grid { background-image:linear-gradient(rgb(15 23 42 / .035) 1px,transparent 1px),linear-gradient(90deg,rgb(15 23 42 / .035) 1px,transparent 1px); background-size:72px 72px; mask-image:linear-gradient(to bottom,black,transparent 90%); -webkit-mask-image:linear-gradient(to bottom,black,transparent 90%); }
+.landing-eyebrow { display:inline-flex; align-items:center; gap:8px; border:1px solid rgb(15 23 42 / .08); border-radius:999px; background:rgb(255 255 255 / .72); padding:6px 10px; color:rgb(88 99 120); font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; box-shadow:0 3px 12px rgb(15 23 42 / .04); }
+.landing-preview-shadow { background:rgb(13 125 112 / .08); filter:blur(34px); }
+.landing-page footer { background:rgb(247 248 246); }
+@media (max-width:767px) { .landing-command-bar { min-height:54px; border-radius:15px; } }

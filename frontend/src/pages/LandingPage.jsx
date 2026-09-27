@@ -10,35 +10,17 @@ import Footer from '../components/landing/Footer'
 import Reveal from '../components/landing/Reveal'
 
 export default function LandingPage() {
-  useEffect(() => {
-    document.title = 'ALBATROSS — Your knowledge, actually searchable'
-  }, [])
-
+  useEffect(() => { document.title = 'ALBATROSS — Your knowledge, actually searchable' }, [])
   return (
-    <div className="dark landing-shell min-h-dvh overflow-x-hidden bg-canvas text-ink">
+    <div className="landing-page min-h-dvh bg-canvas text-ink">
       <LandingNav />
       <main>
         <Hero />
-
-        <Reveal>
-          <LogoCarousel />
-        </Reveal>
-
-        <Reveal>
-          <Benefits />
-        </Reveal>
-
-        <Reveal delay={0.05}>
-          <Workflow />
-        </Reveal>
-
-        <Reveal delay={0.05}>
-          <Pricing />
-        </Reveal>
-
-        <Reveal>
-          <FinalCta />
-        </Reveal>
+        <Reveal><LogoCarousel /></Reveal>
+        <Reveal><Benefits /></Reveal>
+        <Reveal delay={0.05}><Workflow /></Reveal>
+        <Reveal delay={0.05}><Pricing /></Reveal>
+        <Reveal><FinalCta /></Reveal>
       </main>
       <Footer />
     </div>
