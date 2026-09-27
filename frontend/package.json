@@ -27,7 +27,8 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.4",
+    "three128": "npm:three@0.128.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.5.0",

@@ -7,13 +7,14 @@ import Workflow from '../components/landing/Workflow'
 import Pricing from '../components/landing/Pricing'
 import FinalCta from '../components/landing/FinalCta'
 import Footer from '../components/landing/Footer'
+import AnimatedTopDockHost from '../components/landing/AnimatedTopDockHost'
 import Reveal from '../components/landing/Reveal'
 
 export default function LandingPage() {
   useEffect(() => { document.title = 'ALBATROSS — Your knowledge, actually searchable' }, [])
   return (
     <div className="landing-page min-h-dvh bg-canvas text-ink">
-      <LandingNav />
+      <AnimatedTopDockHost />
       <main>
         <Hero />
         <Reveal><LogoCarousel /></Reveal>
