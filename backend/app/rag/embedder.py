@@ -7,24 +7,20 @@ import faiss
 DEFAULT_EMBEDDING_DIM = 512
 EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", DEFAULT_EMBEDDING_DIM))
 
-FAISS_INDEX_PATH = os.getenv("FAISS_INDEX_PATH", "/tmp/faiss.index")
-CHUNK_STORE_PATH = os.getenv("CHUNK_STORE_PATH", "/tmp/chunk_store.pkl")
+_DATA_DIR = os.getenv("DATA_DIR", "/tmp")
+FAISS_INDEX_PATH = os.getenv("FAISS_INDEX_PATH", os.path.join(_DATA_DIR, "faiss.index"))
+CHUNK_STORE_PATH = os.getenv("CHUNK_STORE_PATH", os.path.join(_DATA_DIR, "chunk_store.pkl"))
 
 _index = None
 _chunk_store = []
 
 
 def _tokenize(text: str) -> list:
-    return re.findall(r"\b[a-zA-Z][a-zA-Z0-9]{1,}\b", text.lower())
+    return re.findall(r"[a-zA-Z][a-zA-Z0-9]{1,}", text.lower())
 
 
 def _text_to_vector(text: str) -> np.ndarray:
-    """
-    Deterministic feature-hashing embedding using unigrams + bigrams.
-
-    This is intentionally lightweight and fully local. It is lexical rather
-    than a transformer embedding, so the UI/docs should describe it accurately.
-    """
+    """Local feature-hashing embedding with unigram and bigram features."""
     tokens = _tokenize(text)
     vec = np.zeros(EMBEDDING_DIM, dtype="float32")
 
@@ -65,18 +61,19 @@ def _get_index():
                 f"Embedding dimension mismatch: index={_index.d}, configured={EMBEDDING_DIM}. "
                 "Delete the persisted FAISS files and re-index the documents."
             )
-        print(f"[Embedder] Loaded FAISS index: {_index.ntotal} vectors")
     else:
         _index = faiss.IndexFlatIP(EMBEDDING_DIM)
         _chunk_store = []
-        print(f"[Embedder] Created new FAISS index ({EMBEDDING_DIM}d, inner product)")
 
     return _index, _chunk_store
 
 
 def _save_index():
-    os.makedirs(os.path.dirname(FAISS_INDEX_PATH), exist_ok=True)
-    os.makedirs(os.path.dirname(CHUNK_STORE_PATH), exist_ok=True)
+    for path in (FAISS_INDEX_PATH, CHUNK_STORE_PATH):
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+
     faiss.write_index(_index, FAISS_INDEX_PATH)
     with open(CHUNK_STORE_PATH, "wb") as f:
         pickle.dump(_chunk_store, f)
@@ -87,9 +84,7 @@ def embed_and_store(chunks: list, document_id: int) -> list:
     if not chunks:
         return []
 
-    texts = [c["content"] for c in chunks]
-    print(f"[Embedder] Embedding {len(texts)} chunks locally...")
-    embeddings = _embed_texts(texts)
+    embeddings = _embed_texts([c["content"] for c in chunks])
     start_idx = index.ntotal
     index.add(embeddings)
 
@@ -103,7 +98,6 @@ def embed_and_store(chunks: list, document_id: int) -> list:
         })
 
     _save_index()
-    print(f"[Embedder] Done. Index now has {index.ntotal} vectors.")
     return list(range(start_idx, start_idx + len(chunks)))
 
 
