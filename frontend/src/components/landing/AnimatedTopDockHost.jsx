@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const items = [
@@ -22,11 +22,6 @@ function Icon({ name, size = 15 }) {
 export default function AnimatedTopDockHost() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  useEffect(() => {
-    document.body.classList.add('albatross-dark-landing')
-    return () => document.body.classList.remove('albatross-dark-landing')
-  }, [])
 
   const go = (href) => {
     setMobileOpen(false)
