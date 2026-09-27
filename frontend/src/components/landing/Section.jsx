@@ -11,9 +11,10 @@ export function Section({ id, children, className, tone = 'base', divider = fals
     <section
       id={id}
       className={clsx(
-        'scroll-mt-24 py-20 sm:py-32 px-5 sm:px-8',
+        'scroll-mt-24 py-16 sm:py-24 px-5 sm:px-8',
         bgMap[tone] || bgMap.base,
-        divider && 'border-t border-line',
+        // Using very subtle dividing lines instead of harsh borders, or no lines at all
+        divider && 'border-t border-line/40',
         className
       )}
       {...rest}
@@ -33,15 +34,15 @@ export function SectionIntro({ eyebrow, title, lede, align = 'left', className }
       )}
     >
       {eyebrow && (
-        <p className="text-xs font-semibold uppercase tracking-widest text-accent">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
           {eyebrow}
         </p>
       )}
-      <h2 className="mt-4 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+      <h2 className="mt-4 text-3xl font-bold tracking-tight text-ink sm:text-5xl">
         {title}
       </h2>
       {lede && (
-        <p className="mt-4 text-lg leading-relaxed text-muted">
+        <p className="mt-4 text-lg leading-relaxed text-muted sm:text-xl">
           {lede}
         </p>
       )}

@@ -13,35 +13,39 @@ const STEPS = [
   },
   {
     n: '03',
-    title: 'Read the answer and check the source',
-    body: 'The model answers only from what was retrieved, and every claim links back to the passage, document and page it came from.',
+    title: 'Read and check',
+    body: 'The model answers only from what was retrieved, and every claim links back to the exact passage, document and page it came from.',
   },
 ]
 
 export default function Workflow() {
   return (
-    <Section id="how-it-works" tone="surface" divider>
+    <Section id="how-it-works" tone="surface">
       <SectionIntro
         eyebrow="How it works"
         title="From upload to cited answer."
         lede="Three steps, and nothing about the answer is hidden from you."
       />
 
-      <ol className="mt-16 grid gap-10 sm:grid-cols-3">
+      {/* Modern Bento Grid instead of harsh horizontal lines */}
+      <div className="mt-16 grid gap-6 sm:grid-cols-3">
         {STEPS.map((step) => (
-          <li key={step.n} className="group relative border-t border-line pt-6 transition-all hover:border-accent">
-            <span className="font-mono text-xs font-semibold tracking-widest text-accent transition-transform group-hover:translate-x-1 inline-block">
+          <div 
+            key={step.n} 
+            className="group relative rounded-3xl border border-line/40 bg-canvas p-8 shadow-sm transition-all hover:-translate-y-1 hover:border-line hover:shadow-md"
+          >
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-lg font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-white">
               {step.n}
-            </span>
-            <h3 className="mt-4 text-base font-semibold tracking-tight text-ink">
+            </div>
+            <h3 className="text-xl font-bold tracking-tight text-ink">
               {step.title}
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
+            <p className="mt-3 text-sm leading-relaxed text-muted">
               {step.body}
             </p>
-          </li>
+          </div>
         ))}
-      </ol>
+      </div>
     </Section>
   )
 }

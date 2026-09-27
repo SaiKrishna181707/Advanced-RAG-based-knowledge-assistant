@@ -59,7 +59,7 @@ describe('landing page', () => {
     expect(
       await screen.findByRole('heading', { name: /from upload to cited answer/i }),
     ).toBeInTheDocument()
-    for (const step of [/add your documents/i, /ask in plain language/i, /check the source/i]) {
+    for (const step of [/add your documents/i, /ask in plain language/i, /read and check/i]) {
       expect(screen.getByRole('heading', { name: step })).toBeInTheDocument()
     }
   })

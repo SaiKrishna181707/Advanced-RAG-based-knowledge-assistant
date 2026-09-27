@@ -53,9 +53,12 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Bring back the Product Preview, it was actually good and grounded the page */}
-        <div id="preview" className="mt-20 scroll-mt-24 sm:mt-24">
-          <ProductPreview />
+        {/* Premium glowing wrapper for the Product Preview */}
+        <div id="preview" className="relative mt-20 scroll-mt-24 sm:mt-24">
+          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-br from-accent/30 via-transparent to-accent-ink/20 opacity-50 blur-lg" aria-hidden="true" />
+          <div className="relative rounded-2xl bg-canvas p-1 sm:p-2 border border-white/5 shadow-2xl">
+            <ProductPreview />
+          </div>
         </div>
       </div>
     </section>
