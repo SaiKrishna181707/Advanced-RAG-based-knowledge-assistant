@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import LandingNav from '../components/landing/LandingNav'
 import Hero from '../components/landing/Hero'
 import LogoCarousel from '../components/landing/LogoCarousel'
 import Benefits from '../components/landing/Benefits'

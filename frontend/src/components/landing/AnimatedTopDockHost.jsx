@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatedTopDock } from '../../shaders/animated-top-dock/AnimatedTopDock'
 import '../../shaders/threeui.css'
+import './AnimatedTopDockHost.css'
 
 export default function AnimatedTopDockHost() {
   const navigate = useNavigate()

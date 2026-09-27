@@ -1,0 +1,15 @@
+.landing-dock-host {
+  position: relative;
+  width: 100%;
+  height: clamp(460px, 48vw, 720px);
+  min-height: 460px;
+  overflow: hidden;
+  background: #07080c;
+}
+
+@media (max-width: 767px) {
+  .landing-dock-host {
+    height: 430px;
+    min-height: 430px;
+  }
+}
