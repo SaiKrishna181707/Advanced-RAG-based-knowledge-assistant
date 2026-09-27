@@ -26,15 +26,19 @@ def create_app():
 
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
+
+    data_dir = os.getenv("DATA_DIR", "/tmp")
+    os.makedirs(data_dir, exist_ok=True)
+
+    app.config["DATA_DIR"] = data_dir
     app.config["UPLOAD_FOLDER"] = os.getenv(
         "UPLOAD_FOLDER",
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads"),
+        os.path.join(data_dir, "uploads"),
     )
     app.config["MAX_CONTENT_LENGTH"] = (
         int(os.getenv("MAX_FILE_SIZE_MB", 50)) * 1024 * 1024
     )
 
-    # Never use "*" for an app that may carry private document data.
     CORS(
         app,
         resources={r"/api/*": {"origins": _cors_origins()}},
