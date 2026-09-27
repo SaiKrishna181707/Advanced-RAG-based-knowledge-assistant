@@ -1,9 +1,3 @@
-/**
- * Public product landing page.
- *
- * Keep the page short: hero and product preview, a concise proof strip,
- * four product claims, the workflow, pricing and one closing CTA.
- */
 import { useEffect } from 'react'
 import LandingNav from '../components/landing/LandingNav'
 import Hero from '../components/landing/Hero'
@@ -21,7 +15,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className="dark landing-shell min-h-dvh overflow-x-hidden bg-canvas text-ink">
       <LandingNav />
       <main>
         <Hero />
