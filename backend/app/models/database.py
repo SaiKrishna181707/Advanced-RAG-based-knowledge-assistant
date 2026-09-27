@@ -1,18 +1,20 @@
 import os
 from datetime import datetime
-from sqlalchemy import (
-    create_engine, Column, Integer, String, Text,
-    DateTime, Float, ForeignKey
-)
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 Base = declarative_base()
 
+
 def _get_engine():
-    db_url = os.getenv("DATABASE_URL", "sqlite:////tmp/rag_assistant.db")
-    if "sqlite:///" in db_url and "/tmp" not in db_url:
-        db_url = "sqlite:////tmp/rag_assistant.db"
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        db_url = f"sqlite:///{os.path.join(os.getenv('DATA_DIR', '/tmp'), 'rag_assistant.db')}"
     return create_engine(db_url, connect_args={"check_same_thread": False})
+
+
+# Imported lazily here to keep the public module surface simple.
+from sqlalchemy import create_engine
 
 
 class Document(Base):
@@ -67,7 +69,7 @@ class Message(Base):
 def init_db():
     engine = _get_engine()
     Base.metadata.create_all(engine)
-    print(f"[DB] Initialized")
+    print("[DB] Initialized")
 
 
 def SessionLocal():
