@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import './AnimatedTopDockHost.css'
 
 const items = [
   { label: 'Product', icon: 'cube', href: '#product' },
@@ -39,7 +38,7 @@ export default function AnimatedTopDockHost() {
       <div className="albatross-ambient" aria-hidden="true" />
       <header className="albatross-header">
         <a className="albatross-brand" href="/" aria-label="ALBATROSS home">
-          <span className="albatross-logo" aria-hidden="true">A</span>
+          <span className="albatross-logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16.5c4.2-.2 7.4-2 10-5.5 1.3-1.8 2.7-3.1 5-3.8-.6 4.5-3.5 8.1-7.9 9.4-2.4.7-4.7.7-7.1-.1Z" fill="currentColor"/><path d="M5 8.5c2.6.1 5.1 1.1 7 3.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg></span>
           <span>ALBATROSS</span>
         </a>
         <nav className="albatross-nav" aria-label="Primary navigation">
