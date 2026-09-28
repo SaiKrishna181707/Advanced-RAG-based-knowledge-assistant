@@ -139,14 +139,14 @@ function ChatView() {
   }, [typedQuestion, showAnswer])
 
   return (
-    <div className="grid sm:grid-cols-[1.55fr_1fr] h-[22rem]">
-      <div className="flex flex-col gap-3 p-3.5 sm:p-4">
-        <div className="flex justify-end min-h-[2.5rem]">
+    <div className="grid sm:grid-cols-[1.55fr_1fr] h-[28rem]">
+      <div className="flex flex-col gap-4 p-5 sm:p-6">
+        <div className="flex justify-end min-h-[3rem]">
           {typedQuestion && (
-            <div className="max-w-[88%] rounded-card rounded-br-sm bg-accent px-3 py-2 text-xs leading-relaxed text-accent-fg sm:text-sm shadow-sm">
+            <div className="max-w-[88%] rounded-card rounded-br-sm bg-accent px-4 py-2.5 text-sm leading-relaxed text-accent-fg sm:text-base shadow-sm">
               {typedQuestion}
               {typedQuestion.length < questionText.length && (
-                <span className="inline-block h-3.5 w-[2px] bg-white/70 ml-0.5 align-middle animate-pulse" />
+                <span className="inline-block h-4 w-[2px] bg-white/70 ml-0.5 align-middle animate-pulse" />
               )}
             </div>
           )}
@@ -159,34 +159,34 @@ function ChatView() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-4"
             >
-              <p className="flex items-center gap-1.5 text-2xs text-muted">
-                <span className="h-1.5 w-1.5 rounded-full bg-positive" aria-hidden="true" />
+              <p className="flex items-center gap-2 text-xs text-muted">
+                <span className="h-2 w-2 rounded-full bg-positive" aria-hidden="true" />
                 Financial Reports · hybrid retrieval · 42 ms
               </p>
 
-              <div className="max-w-[95%] rounded-card rounded-bl-sm border border-line/40 bg-surface px-3 py-2.5 text-xs leading-relaxed text-ink sm:text-sm shadow-sm ring-1 ring-white/10">
+              <div className="max-w-[95%] rounded-card rounded-bl-sm border border-line/40 bg-surface px-4 py-3.5 text-sm leading-relaxed text-ink sm:text-base shadow-sm ring-1 ring-white/10">
                 <p>
                   In Q3, total revenue grew by 24% year-over-year to $4.2M, driven primarily by strong enterprise software sales
                   <Citation n={1} />. Operating margins also saw significant improvement, expanding to 18% due to cost efficiencies
                   <Citation n={2} />.
                 </p>
-                <p className="mt-2 text-2xs text-muted">2 passages · 1 document</p>
+                <p className="mt-3 text-xs text-muted">2 passages · 1 document</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="mt-auto flex items-center gap-2 rounded-input border border-line/40 bg-surface/50 py-1.5 pl-3 pr-1.5 ring-1 ring-white/5">
-          <span className="flex-1 text-xs text-muted/60">Ask a follow-up</span>
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-accent/20 text-accent">
-            <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
+        <div className="mt-auto flex items-center gap-3 rounded-input border border-line/40 bg-surface/50 py-2 pl-4 pr-2 ring-1 ring-white/5">
+          <span className="flex-1 text-sm text-muted/60">Ask a follow-up</span>
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] bg-accent/20 text-accent">
+            <ArrowUp aria-hidden="true" className="h-4 w-4" />
           </span>
         </div>
       </div>
 
-      <div className="border-t border-line/40 bg-surface/30 p-3.5 sm:border-l sm:border-t-0 sm:p-4 relative">
+      <div className="border-t border-line/40 bg-surface/30 p-5 sm:border-l sm:border-t-0 sm:p-6 relative">
         <AnimatePresence>
           {showAnswer && (
             <motion.div
@@ -195,31 +195,31 @@ function ChatView() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <p className="text-2xs font-semibold uppercase tracking-[0.12em] text-muted">Sources</p>
-              <ul className="mt-3 space-y-2">
-                <li className="rounded-input border border-line/40 bg-surface/60 p-2.5 shadow-sm">
-                  <div className="flex items-center gap-1.5">
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-accent/12 text-2xs font-semibold text-accent">1</span>
-                    <span className="min-w-0 truncate text-2xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Sources</p>
+              <ul className="mt-4 space-y-3">
+                <li className="rounded-input border border-line/40 bg-surface/60 p-3 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/12 text-xs font-semibold text-accent">1</span>
+                    <span className="min-w-0 truncate text-xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
                   </div>
-                  <p className="mt-1.5 line-clamp-2 text-2xs leading-relaxed text-muted">
+                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
                     ...total revenue reached $4.2M, representing a 24% YoY growth, fueled heavily by enterprise software renewals...
                   </p>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="text-2xs text-muted">Page 3</span>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted">Page 3</span>
                     <Relevance score={0.92} />
                   </div>
                 </li>
-                <li className="rounded-input border border-line/40 bg-surface/60 p-2.5 shadow-sm">
-                  <div className="flex items-center gap-1.5">
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-accent/12 text-2xs font-semibold text-accent">2</span>
-                    <span className="min-w-0 truncate text-2xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
+                <li className="rounded-input border border-line/40 bg-surface/60 p-3 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/12 text-xs font-semibold text-accent">2</span>
+                    <span className="min-w-0 truncate text-xs font-medium text-ink">Q3_Earnings_Report.pdf</span>
                   </div>
-                  <p className="mt-1.5 line-clamp-2 text-2xs leading-relaxed text-muted">
+                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
                     ...cost optimization strategies executed in Q2 resulted in operating margins expanding to a record 18%...
                   </p>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="text-2xs text-muted">Page 8</span>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted">Page 8</span>
                     <Relevance score={0.85} />
                   </div>
                 </li>
