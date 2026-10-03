@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from './ui/card';
 import { Briefcase, CheckCircle2, Star, TrendingUp, Sparkles, FileText, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPreview() {
   return (
@@ -55,30 +56,34 @@ export default function DashboardPreview() {
                 <h3 className="font-semibold text-brand-text">AI Suggestions</h3>
               </div>
               <div className="space-y-3">
-                <button className="w-full text-left bg-brand-surface-hover border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md active:scale-[0.98] transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400">
-                      <Star size={14} />
+                <Link href="/signin" className="w-full block text-left bg-brand-surface-hover border border-brand-border rounded-xl p-3 group cursor-pointer hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md active:scale-[0.98] transition-all">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400">
+                        <Star size={14} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-brand-text group-hover:text-brand-accent transition-colors">Quantify your achievements</p>
+                        <p className="text-xs text-brand-muted">Add metrics to your recent role</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-brand-text group-hover:text-brand-accent transition-colors">Quantify your achievements</p>
-                      <p className="text-xs text-brand-muted">Add metrics to your recent role</p>
-                    </div>
+                    <ChevronRight size={16} className="text-brand-muted group-hover:text-brand-accent group-hover:translate-x-1 transition-all" />
                   </div>
-                  <ChevronRight size={16} className="text-brand-muted group-hover:text-brand-accent group-hover:translate-x-1 transition-all" />
-                </button>
-                <button className="w-full text-left bg-brand-surface-hover border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md active:scale-[0.98] transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                      <FileText size={14} />
+                </Link>
+                <Link href="/signin" className="w-full block text-left bg-brand-surface-hover border border-brand-border rounded-xl p-3 group cursor-pointer hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md active:scale-[0.98] transition-all">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
+                        <FileText size={14} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-brand-text group-hover:text-brand-accent transition-colors">Missing keywords detected</p>
+                        <p className="text-xs text-brand-muted">"React Native" is highly requested</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-brand-text group-hover:text-brand-accent transition-colors">Missing keywords detected</p>
-                      <p className="text-xs text-brand-muted">"React Native" is highly requested</p>
-                    </div>
+                    <ChevronRight size={16} className="text-brand-muted group-hover:text-brand-accent group-hover:translate-x-1 transition-all" />
                   </div>
-                  <ChevronRight size={16} className="text-brand-muted group-hover:text-brand-accent group-hover:translate-x-1 transition-all" />
-                </button>
+                </Link>
               </div>
             </Card>
           </div>
@@ -94,7 +99,7 @@ export default function DashboardPreview() {
                   { title: "Senior Frontend Engineer", company: "Stripe", match: 94, icon: <Briefcase size={16}/> },
                   { title: "Product Designer", company: "Vercel", match: 89, icon: <Briefcase size={16}/> }
                 ].map((job, i) => (
-                  <button key={i} className="w-full flex justify-between items-center group p-2 -mx-2 rounded-xl hover:bg-brand-surface-hover transition-colors">
+                  <Link href="/signin" key={i} className="w-full flex justify-between items-center group p-2 -mx-2 rounded-xl hover:bg-brand-surface-hover transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-brand-surface-hover flex items-center justify-center text-brand-text group-hover:bg-brand-surface group-hover:text-brand-accent transition-colors">
                         {job.icon}
@@ -108,7 +113,7 @@ export default function DashboardPreview() {
                       <span className="text-sm font-semibold text-brand-accent">{job.match}%</span>
                       <p className="text-[10px] uppercase tracking-wider text-brand-muted">Match</p>
                     </div>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </Card>
