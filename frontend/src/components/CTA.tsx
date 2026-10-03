@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 
@@ -24,12 +25,16 @@ export default function CTA() {
             Join thousands of professionals using AI to build better resumes, ace their interviews, and land their dream roles.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button variant="accent" size="lg" className="w-full sm:w-auto px-8">
-              Start for free
-            </Button>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 border-white/20 text-white hover:bg-white/10 hover:text-white">
-              View demo
-            </Button>
+            <Link href="/signin" className="w-full sm:w-auto">
+              <Button variant="accent" size="lg" className="w-full sm:w-auto px-8" asChild>
+                Start for free
+              </Button>
+            </Link>
+            <Link href="/#demo" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 border-white/20 text-white hover:bg-white/10 hover:text-white" asChild>
+                View demo
+              </Button>
+            </Link>
           </div>
           <p className="text-white/40 text-xs mt-6">No credit card required. 14-day free trial on Pro.</p>
         </div>

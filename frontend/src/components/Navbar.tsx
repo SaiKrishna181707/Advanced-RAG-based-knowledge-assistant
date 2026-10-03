@@ -57,7 +57,9 @@ export default function Navbar() {
           <Link href="/signin" className="text-sm font-medium text-brand-text hover:text-brand-muted transition-colors">
             Sign In
           </Link>
-          <Button variant="accent" size="sm">Get Started</Button>
+          <Link href="/signin">
+            <Button variant="accent" size="sm" asChild>Get Started</Button>
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -86,8 +88,12 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex flex-col gap-3 mt-4">
-              <Button variant="outline" className="w-full justify-center">Sign In</Button>
-              <Button variant="accent" className="w-full justify-center">Get Started</Button>
+              <Link href="/signin" className="w-full">
+                <Button variant="outline" className="w-full justify-center" asChild>Sign In</Button>
+              </Link>
+              <Link href="/signin" className="w-full">
+                <Button variant="accent" className="w-full justify-center" asChild>Get Started</Button>
+              </Link>
             </div>
           </motion.div>
         )}

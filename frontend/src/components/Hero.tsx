@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 
@@ -25,12 +26,16 @@ export default function Hero() {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <Button variant="accent" size="lg" className="w-full sm:w-auto">
-            Get Started
-          </Button>
-          <Button variant="outline" size="lg" className="w-full sm:w-auto">
-            Explore Features
-          </Button>
+          <Link href="/signin" className="w-full sm:w-auto">
+            <Button variant="accent" size="lg" className="w-full sm:w-auto" asChild>
+              Get Started
+            </Button>
+          </Link>
+          <Link href="#features" className="w-full sm:w-auto">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+              Explore Features
+            </Button>
+          </Link>
         </div>
       </motion.div>
     </section>
