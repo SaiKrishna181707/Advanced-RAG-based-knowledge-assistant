@@ -34,9 +34,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand-text flex items-center justify-center">
-            <span className="text-brand-bg font-bold text-lg">E</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-bg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <span className="font-semibold text-xl tracking-tight text-brand-text">ElevateAI</span>
+          <span className="font-semibold text-xl tracking-tight text-brand-text">Nexus</span>
         </Link>
 
         {/* Desktop Links */}

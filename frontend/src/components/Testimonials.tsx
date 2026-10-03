@@ -5,7 +5,7 @@ import { Card } from './ui/card';
 
 const testimonials = [
   {
-    quote: "I was applying for months with no response. ElevateAI tailored my resume to highlight my architectural decisions, and I landed 3 interviews in a week.",
+    quote: "I was applying for months with no response. Nexus tailored my resume to highlight my architectural decisions, and I landed 3 interviews in a week.",
     author: "Sarah J.",
     role: "Senior Staff Engineer",
     metric: "+300% interview rate"

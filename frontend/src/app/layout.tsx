@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ElevateAI | Intelligent Career Platform",
+  title: "Nexus | Intelligent Career Platform",
   description: "Build your career with intelligence. AI-powered resume tailoring, job matching, and interview prep.",
 };
 

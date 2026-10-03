@@ -2,34 +2,33 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-interface FeatureProps {
-  number: string;
-  title: string;
-  description: string;
-  bullets: string[];
-  reversed?: boolean;
-  mockup: React.ReactNode;
-}
-
-const features: FeatureProps[] = [
+const features = [
   {
     number: "01",
     title: "Discover",
-    description: "Find relevant opportunities that actually match your skills. Our AI continuously scans thousands of boards to bring the best roles directly to you.",
-    bullets: ["Smart role matching algorithms", "Hidden opportunity detection", "Salary transparency insights"],
+    description: "Find relevant opportunities perfectly matched to your skills. Our AI scans thousands of job postings to find where you're most likely to succeed.",
+    bullets: ["Smart skill matching", "Hidden opportunity detection", "Salary and culture alignment"],
     reversed: false,
     mockup: (
       <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm">
-        <div className="h-4 w-24 bg-white/10 rounded mb-4" />
+        <h4 className="font-semibold text-brand-text mb-4 text-sm">Recommended Matches</h4>
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex gap-4 p-4 bg-brand-surface-hover rounded-xl border border-white/5 shadow-sm">
-              <div className="w-10 h-10 rounded-lg bg-brand-accent/10" />
+          {[
+            { title: "Senior React Engineer", company: "Linear", match: "98%" },
+            { title: "Frontend Lead", company: "Notion", match: "94%" },
+            { title: "Software Engineer III", company: "Netflix", match: "91%" }
+          ].map((job, i) => (
+            <div key={i} className="flex gap-4 p-4 bg-brand-surface-hover rounded-xl border border-white/5 shadow-sm items-center hover:border-brand-accent/50 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-brand-accent/10 flex items-center justify-center text-brand-accent font-bold">
+                {job.company[0]}
+              </div>
               <div className="flex-1">
-                <div className="h-3 w-32 bg-white/10 rounded mb-2" />
-                <div className="h-2 w-20 bg-white/5 rounded" />
+                <div className="text-sm font-semibold text-brand-text">{job.title}</div>
+                <div className="text-xs text-brand-muted">{job.company}</div>
+              </div>
+              <div className="text-xs font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-full">
+                {job.match}
               </div>
             </div>
           ))}
@@ -47,7 +46,7 @@ const features: FeatureProps[] = [
       <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm">
         <div className="flex items-end justify-between mb-8">
           <div className="space-y-2">
-            <div className="h-3 w-16 bg-white/10 rounded" />
+            <h4 className="text-sm font-medium text-brand-muted">Frontend Lead - Notion</h4>
             <div className="text-4xl font-bold text-brand-text">84%</div>
           </div>
           <div className="w-16 h-16 rounded-full border-4 border-brand-accent flex items-center justify-center">
@@ -98,12 +97,11 @@ const features: FeatureProps[] = [
           <span className="text-xs font-semibold uppercase tracking-wider">AI Interviewer Active</span>
         </div>
         <div className="space-y-4">
-          <div className="bg-brand-surface-hover/10 rounded-xl p-4 rounded-tl-none mr-8">
-            <p className="text-sm text-white/90">"Can you walk me through a time you had to pivot a major technical decision late in the project?"</p>
+          <div className="bg-white/10 rounded-xl p-4 rounded-tl-none mr-8">
+            <p className="text-sm text-brand-text">"Can you walk me through a time you had to pivot a major technical decision late in the project?"</p>
           </div>
           <div className="bg-brand-accent/20 rounded-xl p-4 rounded-tr-none ml-8 text-right">
-            <div className="h-2 w-32 bg-brand-surface-hover/40 rounded inline-block mb-1" />
-            <div className="h-2 w-48 bg-brand-surface-hover/40 rounded inline-block" />
+            <p className="text-sm text-brand-text">"At my previous role, we realized our database schema wouldn't scale right before beta launch..."</p>
           </div>
         </div>
       </div>
@@ -117,20 +115,28 @@ const features: FeatureProps[] = [
     reversed: false,
     mockup: (
       <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 shadow-sm flex gap-3 h-48 overflow-hidden">
-        {['Applied', 'Interviewing'].map((col, idx) => (
-          <div key={idx} className="flex-1 bg-brand-bg rounded-xl p-3 border border-white/5 flex flex-col gap-2">
-            <span className="text-xs font-medium text-brand-muted">{col}</span>
-            <div className="bg-brand-surface-hover p-3 rounded-lg border border-white/5 shadow-sm">
-              <div className="h-2 w-16 bg-white/10 rounded mb-2" />
-              <div className="h-2 w-10 bg-white/5 rounded" />
-            </div>
-            {idx === 0 && (
-              <div className="bg-brand-surface-hover p-3 rounded-lg border border-white/5 shadow-sm opacity-50">
-                <div className="h-2 w-20 bg-white/10 rounded mb-2" />
-              </div>
-            )}
+        
+        <div className="flex-1 bg-brand-bg rounded-xl p-3 border border-white/5 flex flex-col gap-2">
+          <span className="text-xs font-medium text-brand-muted">Applied (24)</span>
+          <div className="bg-brand-surface p-3 rounded-lg border border-white/5 shadow-sm hover:border-brand-accent/30 transition-colors cursor-pointer">
+            <div className="text-xs font-semibold text-brand-text">Software Engineer</div>
+            <div className="text-[10px] text-brand-muted">Vercel • 2d ago</div>
           </div>
-        ))}
+          <div className="bg-brand-surface p-3 rounded-lg border border-white/5 shadow-sm opacity-60">
+            <div className="text-xs font-semibold text-brand-text">Frontend Dev</div>
+            <div className="text-[10px] text-brand-muted">Shopify • 3d ago</div>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-brand-bg rounded-xl p-3 border border-white/5 flex flex-col gap-2">
+          <span className="text-xs font-medium text-brand-muted">Interviewing (5)</span>
+          <div className="bg-brand-surface p-3 rounded-lg border border-brand-accent/50 shadow-sm relative overflow-hidden cursor-pointer hover:border-brand-accent transition-colors">
+            <div className="absolute top-0 left-0 w-full h-1 bg-brand-accent" />
+            <div className="text-xs font-semibold text-brand-text mt-1">Sr. React Engineer</div>
+            <div className="text-[10px] text-brand-muted">Stripe • Tech Screen</div>
+          </div>
+        </div>
+
       </div>
     )
   }
@@ -138,34 +144,34 @@ const features: FeatureProps[] = [
 
 export default function FeatureSection() {
   return (
-    <section id="features" className="py-24 px-6 max-w-7xl mx-auto">
-      <div className="flex flex-col gap-32">
-        {features.map((feature, idx) => (
-          <div 
-            key={feature.number} 
-            className={cn(
-              "flex flex-col md:flex-row items-center gap-12 lg:gap-24",
-              feature.reversed ? "md:flex-row-reverse" : ""
-            )}
-          >
+    <section id="features" className="py-24 px-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto space-y-32">
+        {features.map((feature, index) => (
+          <div key={feature.number} className={`flex flex-col md:flex-row gap-12 lg:gap-24 items-center ${feature.reversed ? 'md:flex-row-reverse' : ''}`}>
+            
+            {/* Text Side */}
             <motion.div 
-              initial={{ opacity: 0, x: feature.reversed ? 30 : -30 }}
+              initial={{ opacity: 0, x: feature.reversed ? 40 : -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6 }}
               className="flex-1 space-y-6"
             >
-              <span className="text-brand-muted font-mono text-sm">{feature.number} — {feature.title}</span>
+              <div className="flex items-center gap-4 text-brand-muted font-mono text-sm">
+                <span>{feature.number}</span>
+                <span className="w-8 h-px bg-brand-border"></span>
+                <span>{feature.title}</span>
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold text-brand-text tracking-tight">
                 {feature.description.split('.')[0]}.
               </h2>
-              <p className="text-brand-muted text-lg leading-relaxed">
+              <p className="text-lg text-brand-muted">
                 {feature.description.split('.').slice(1).join('.').trim()}
               </p>
               
               <ul className="space-y-3 pt-4">
                 {feature.bullets.map((bullet, i) => (
-                  <li key={i} className="flex items-center gap-3 text-brand-text font-medium">
+                  <li key={i} className="flex items-center gap-3 text-brand-text font-medium text-sm">
                     <div className="w-5 h-5 rounded-full bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
                       <Check size={12} className="text-brand-accent" />
                     </div>
@@ -174,20 +180,19 @@ export default function FeatureSection() {
                 ))}
               </ul>
             </motion.div>
-            
+
+            {/* Mockup Side */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex-1 w-full"
+              className="flex-1 w-full max-w-md mx-auto relative"
             >
-              <div className="relative">
-                {/* Decorative background element */}
-                <div className="absolute -inset-4 bg-brand-surface/50 rounded-[32px] -z-10" />
-                {feature.mockup}
-              </div>
+              <div className="absolute -inset-4 bg-brand-surface/50 rounded-[32px] -z-10" />
+              {feature.mockup}
             </motion.div>
+
           </div>
         ))}
       </div>

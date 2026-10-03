@@ -34,9 +34,9 @@ export default function SignIn() {
       >
         <Link href="/" className="flex items-center justify-center gap-2 mb-8 group">
           <div className="w-10 h-10 rounded-xl bg-brand-text flex items-center justify-center transition-transform group-hover:scale-105">
-            <span className="text-brand-bg font-bold text-xl">E</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-bg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <span className="font-semibold text-2xl tracking-tight text-brand-text">ElevateAI</span>
+          <span className="font-semibold text-2xl tracking-tight text-brand-text">Nexus</span>
         </Link>
         
         <h2 className="text-center text-3xl font-bold tracking-tight text-brand-text">
