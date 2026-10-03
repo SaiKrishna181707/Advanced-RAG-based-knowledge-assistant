@@ -71,7 +71,7 @@ export default function Pricing() {
             >
               <Card className={`h-full flex flex-col p-8 ${plan.popular ? 'border-brand-accent shadow-md relative' : 'border-brand-border/80 shadow-sm'}`}>
                 {plan.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-accent text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-accent text-[#0A0A0E] text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full">
                     Most Popular
                   </div>
                 )}

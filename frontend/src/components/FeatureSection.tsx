@@ -21,15 +21,15 @@ const features: FeatureProps[] = [
     bullets: ["Smart role matching algorithms", "Hidden opportunity detection", "Salary transparency insights"],
     reversed: false,
     mockup: (
-      <div className="bg-[#F8F9FA] border border-brand-border rounded-2xl p-6 shadow-sm">
-        <div className="h-4 w-24 bg-gray-200 rounded mb-4" />
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm">
+        <div className="h-4 w-24 bg-white/10 rounded mb-4" />
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="flex gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div key={i} className="flex gap-4 p-4 bg-brand-surface-hover rounded-xl border border-white/5 shadow-sm">
               <div className="w-10 h-10 rounded-lg bg-brand-accent/10" />
               <div className="flex-1">
-                <div className="h-3 w-32 bg-gray-200 rounded mb-2" />
-                <div className="h-2 w-20 bg-gray-100 rounded" />
+                <div className="h-3 w-32 bg-white/10 rounded mb-2" />
+                <div className="h-2 w-20 bg-white/5 rounded" />
               </div>
             </div>
           ))}
@@ -44,10 +44,10 @@ const features: FeatureProps[] = [
     bullets: ["Instant ATS compatibility scoring", "Skill gap analysis", "Competitor benchmarking"],
     reversed: true,
     mockup: (
-      <div className="bg-[#F8F9FA] border border-brand-border rounded-2xl p-6 shadow-sm">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm">
         <div className="flex items-end justify-between mb-8">
           <div className="space-y-2">
-            <div className="h-3 w-16 bg-gray-200 rounded" />
+            <div className="h-3 w-16 bg-white/10 rounded" />
             <div className="text-4xl font-bold text-brand-text">84%</div>
           </div>
           <div className="w-16 h-16 rounded-full border-4 border-brand-accent flex items-center justify-center">
@@ -55,7 +55,7 @@ const features: FeatureProps[] = [
           </div>
         </div>
         <div className="space-y-2">
-          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-brand-accent w-[84%]" />
           </div>
           <div className="flex justify-between text-xs text-brand-muted">
@@ -73,12 +73,12 @@ const features: FeatureProps[] = [
     bullets: ["Context-aware phrasing suggestions", "Automated keyword optimization", "Multiple resume versions"],
     reversed: false,
     mockup: (
-       <div className="bg-[#F8F9FA] border border-brand-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-        <div className="p-4 bg-white border border-red-100 rounded-xl relative">
+       <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+        <div className="p-4 bg-brand-surface-hover border border-red-900/30 rounded-xl relative">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400 rounded-l-xl" />
           <p className="text-sm line-through text-gray-400">Led a team of developers to build the app.</p>
         </div>
-        <div className="p-4 bg-white border border-brand-accent/20 rounded-xl relative shadow-sm">
+        <div className="p-4 bg-brand-surface-hover border border-brand-accent/20 rounded-xl relative shadow-sm">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-accent rounded-l-xl" />
           <p className="text-sm text-brand-text font-medium">Spearheaded a 5-person engineering team to architect and launch the mobile application, increasing user retention by 24%.</p>
         </div>
@@ -92,18 +92,18 @@ const features: FeatureProps[] = [
     bullets: ["Custom technical questions", "Behavioral scenario generation", "Company insight briefing"],
     reversed: true,
     mockup: (
-      <div className="bg-brand-text text-white rounded-2xl p-6 shadow-lg">
+      <div className="bg-brand-surface border border-brand-border text-brand-text rounded-2xl p-6 shadow-lg">
         <div className="flex items-center gap-2 mb-6 text-brand-accent">
           <div className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
           <span className="text-xs font-semibold uppercase tracking-wider">AI Interviewer Active</span>
         </div>
         <div className="space-y-4">
-          <div className="bg-white/10 rounded-xl p-4 rounded-tl-none mr-8">
+          <div className="bg-brand-surface-hover/10 rounded-xl p-4 rounded-tl-none mr-8">
             <p className="text-sm text-white/90">"Can you walk me through a time you had to pivot a major technical decision late in the project?"</p>
           </div>
           <div className="bg-brand-accent/20 rounded-xl p-4 rounded-tr-none ml-8 text-right">
-            <div className="h-2 w-32 bg-white/40 rounded inline-block mb-1" />
-            <div className="h-2 w-48 bg-white/40 rounded inline-block" />
+            <div className="h-2 w-32 bg-brand-surface-hover/40 rounded inline-block mb-1" />
+            <div className="h-2 w-48 bg-brand-surface-hover/40 rounded inline-block" />
           </div>
         </div>
       </div>
@@ -116,17 +116,17 @@ const features: FeatureProps[] = [
     bullets: ["Visual application pipeline", "Automated follow-up reminders", "Interview scheduling integration"],
     reversed: false,
     mockup: (
-      <div className="bg-[#F8F9FA] border border-brand-border rounded-2xl p-4 shadow-sm flex gap-3 h-48 overflow-hidden">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 shadow-sm flex gap-3 h-48 overflow-hidden">
         {['Applied', 'Interviewing'].map((col, idx) => (
-          <div key={idx} className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col gap-2">
+          <div key={idx} className="flex-1 bg-brand-bg rounded-xl p-3 border border-white/5 flex flex-col gap-2">
             <span className="text-xs font-medium text-brand-muted">{col}</span>
-            <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-              <div className="h-2 w-16 bg-gray-200 rounded mb-2" />
-              <div className="h-2 w-10 bg-gray-100 rounded" />
+            <div className="bg-brand-surface-hover p-3 rounded-lg border border-white/5 shadow-sm">
+              <div className="h-2 w-16 bg-white/10 rounded mb-2" />
+              <div className="h-2 w-10 bg-white/5 rounded" />
             </div>
             {idx === 0 && (
-              <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm opacity-50">
-                <div className="h-2 w-20 bg-gray-200 rounded mb-2" />
+              <div className="bg-brand-surface-hover p-3 rounded-lg border border-white/5 shadow-sm opacity-50">
+                <div className="h-2 w-20 bg-white/10 rounded mb-2" />
               </div>
             )}
           </div>
@@ -184,7 +184,7 @@ export default function FeatureSection() {
             >
               <div className="relative">
                 {/* Decorative background element */}
-                <div className="absolute -inset-4 bg-gray-50/50 rounded-[32px] -z-10" />
+                <div className="absolute -inset-4 bg-brand-surface/50 rounded-[32px] -z-10" />
                 {feature.mockup}
               </div>
             </motion.div>

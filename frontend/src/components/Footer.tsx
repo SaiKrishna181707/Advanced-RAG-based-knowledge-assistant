@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-brand-text flex items-center justify-center">
-                <span className="text-white font-bold text-lg">E</span>
+                <span className="text-brand-bg font-bold text-lg">E</span>
               </div>
               <span className="font-semibold text-xl tracking-tight text-brand-text">ElevateAI</span>
             </Link>

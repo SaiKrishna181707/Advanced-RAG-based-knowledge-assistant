@@ -34,7 +34,7 @@ export default function SignIn() {
       >
         <Link href="/" className="flex items-center justify-center gap-2 mb-8 group">
           <div className="w-10 h-10 rounded-xl bg-brand-text flex items-center justify-center transition-transform group-hover:scale-105">
-            <span className="text-white font-bold text-xl">E</span>
+            <span className="text-brand-bg font-bold text-xl">E</span>
           </div>
           <span className="font-semibold text-2xl tracking-tight text-brand-text">ElevateAI</span>
         </Link>
@@ -59,7 +59,7 @@ export default function SignIn() {
         <Card className="p-8 shadow-xl shadow-black/[0.03] border-brand-border/60">
           <div className="flex flex-col gap-4">
             
-            <Button variant="outline" className="w-full h-12 flex items-center justify-center gap-3 bg-white hover:bg-gray-50 border-gray-200">
+            <Button variant="outline" className="w-full h-12 flex items-center justify-center gap-3 bg-brand-surface-hover hover:bg-brand-surface border-brand-border">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -69,8 +69,8 @@ export default function SignIn() {
               <span className="font-medium text-brand-text">Continue with Google</span>
             </Button>
             
-            <Button variant="outline" className="w-full h-12 flex items-center justify-center gap-3 bg-white hover:bg-gray-50 border-gray-200">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+            <Button variant="outline" className="w-full h-12 flex items-center justify-center gap-3 bg-brand-surface-hover hover:bg-brand-surface border-brand-border">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.26.45 3.05.45.71 0 1.96-.54 3.41-.45 1.35.04 2.51.37 3.39 1.15-2.73 1.6-2.25 5.36.49 6.42-.69 1.93-1.43 3.52-2.34 5.4zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
               <span className="font-medium text-brand-text">Continue with Apple</span>
@@ -104,7 +104,7 @@ export default function SignIn() {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full appearance-none rounded-xl border border-brand-border bg-white px-4 py-3 text-brand-text placeholder-gray-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent sm:text-sm transition-colors shadow-sm"
+                      className="block w-full appearance-none rounded-xl border border-brand-border bg-brand-surface-hover px-4 py-3 text-brand-text placeholder-gray-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent sm:text-sm transition-colors shadow-sm"
                     />
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export default function SignIn() {
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <div className="w-4 h-4 rounded-full border-2 border-brand-bg/30 border-t-brand-bg animate-spin" />
                         Signing in...
                       </span>
                     ) : (

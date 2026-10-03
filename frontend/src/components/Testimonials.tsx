@@ -46,7 +46,7 @@ export default function Testimonials() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-brand-muted font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-brand-surface-hover flex items-center justify-center text-brand-muted font-bold text-sm">
                     {test.author.charAt(0)}
                   </div>
                   <div>

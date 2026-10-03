@@ -23,7 +23,7 @@ export default function DashboardPreview() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Profile / Resume Score */}
-            <Card className="col-span-1 md:col-span-1 bg-[#FAFAFA] border-none shadow-none p-6">
+            <Card className="col-span-1 md:col-span-1 bg-brand-surface-hover border-none shadow-none p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="font-semibold text-brand-text mb-1">Resume Score</h3>
@@ -36,13 +36,13 @@ export default function DashboardPreview() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-brand-muted flex items-center gap-1.5"><CheckCircle2 size={14} className="text-brand-accent" /> Impact</span>
-                  <span className="font-medium">95/100</span>
+                  <span className="font-medium text-brand-text">95/100</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-brand-muted flex items-center gap-1.5"><CheckCircle2 size={14} className="text-brand-accent" /> ATS Readability</span>
-                  <span className="font-medium">88/100</span>
+                  <span className="font-medium text-brand-text">88/100</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
                   <div className="bg-brand-accent h-1.5 rounded-full" style={{ width: '92%' }}></div>
                 </div>
               </div>
@@ -55,9 +55,9 @@ export default function DashboardPreview() {
                 <h3 className="font-semibold text-brand-text">AI Suggestions</h3>
               </div>
               <div className="space-y-3">
-                <div className="bg-[#FCFCFC] border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors">
+                <div className="bg-brand-surface-hover border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                    <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400">
                       <Star size={14} />
                     </div>
                     <div>
@@ -67,9 +67,9 @@ export default function DashboardPreview() {
                   </div>
                   <ChevronRight size={16} className="text-brand-muted" />
                 </div>
-                <div className="bg-[#FCFCFC] border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors">
+                <div className="bg-brand-surface-hover border border-brand-border rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
                       <FileText size={14} />
                     </div>
                     <div>
@@ -96,7 +96,7 @@ export default function DashboardPreview() {
                 ].map((job, i) => (
                   <div key={i} className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-brand-text">
+                      <div className="w-10 h-10 rounded-xl bg-brand-surface-hover flex items-center justify-center text-brand-text">
                         {job.icon}
                       </div>
                       <div>
@@ -114,25 +114,25 @@ export default function DashboardPreview() {
             </Card>
 
             {/* Application Pipeline */}
-            <Card className="p-6 bg-brand-text text-white border-none relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-xl" />
+            <Card className="p-6 bg-brand-surface-hover border-brand-border relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full -mr-10 -mt-10 blur-xl" />
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-semibold">Application Pipeline</h3>
-                  <TrendingUp size={18} className="text-white/60" />
+                  <h3 className="font-semibold text-brand-text">Application Pipeline</h3>
+                  <TrendingUp size={18} className="text-brand-muted" />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-white/10 rounded-xl p-3">
-                    <p className="text-white/60 text-xs mb-1">Applied</p>
-                    <p className="text-2xl font-semibold">24</p>
+                  <div className="bg-brand-bg rounded-xl p-3">
+                    <p className="text-brand-muted text-xs mb-1">Applied</p>
+                    <p className="text-2xl font-semibold text-brand-text">24</p>
                   </div>
-                  <div className="bg-white/10 rounded-xl p-3">
-                    <p className="text-white/60 text-xs mb-1">Interviews</p>
-                    <p className="text-2xl font-semibold">5</p>
+                  <div className="bg-brand-bg rounded-xl p-3">
+                    <p className="text-brand-muted text-xs mb-1">Interviews</p>
+                    <p className="text-2xl font-semibold text-brand-text">5</p>
                   </div>
-                  <div className="bg-brand-accent/30 border border-brand-accent/50 rounded-xl p-3">
-                    <p className="text-brand-accent-hover text-xs mb-1">Offers</p>
-                    <p className="text-2xl font-semibold text-brand-accent">2</p>
+                  <div className="bg-brand-accent/10 border border-brand-accent/30 rounded-xl p-3">
+                    <p className="text-brand-accent text-xs mb-1">Offers</p>
+                    <p className="text-2xl font-semibold text-brand-text">2</p>
                   </div>
                 </div>
               </div>

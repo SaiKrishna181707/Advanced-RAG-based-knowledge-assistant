@@ -1,20 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-accent: #0f9688;
-  --color-brand-accent-hover: #0c7c70;
-  --color-brand-bg: #FCFCFC; /* warm off-white */
-  --color-brand-surface: #ffffff;
-  --color-brand-text: #171717; /* charcoal */
-  --color-brand-muted: #737373; /* muted gray */
-  --color-brand-border: #E5E5E5;
+  /* ResuMax Dark Mode Palette */
+  --color-brand-accent: #E879A3;
+  --color-brand-accent-hover: #F5A1C0;
+  --color-brand-accent-secondary: #d97757;
+  
+  --color-brand-bg: #0A0A0E; /* Deep dark background */
+  --color-brand-surface: #111116; /* Slightly lighter card surface */
+  --color-brand-surface-hover: #15131a;
+  
+  --color-brand-text: #F5F1EB; /* Warm ivory text */
+  --color-brand-muted: #85858f; /* Muted gray text */
+  --color-brand-border: rgba(245, 241, 235, 0.08); /* Subtle ivory border */
   
   --font-sans: var(--font-geist-sans);
 }
 
 :root {
-  --background: #FCFCF9; /* ivory off-white */
-  --foreground: #171717;
+  --background: #0A0A0E;
+  --foreground: #F5F1EB;
 }
 
 body {
@@ -27,6 +32,6 @@ body {
 /* Custom Utilities for the Premium Feel */
 @layer utilities {
   .shadow-soft {
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 0 3px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 3px rgba(0,0,0,0.2);
   }
 }
