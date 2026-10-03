@@ -20,12 +20,11 @@ const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignupPage = lazy(() => import('./pages/SignupPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
-const ChatPage = lazy(() => import('./pages/ChatPage'))
-const DocumentsPage = lazy(() => import('./pages/DocumentsPage'))
-const CollectionsPage = lazy(() => import('./pages/CollectionsPage'))
-const SearchPage = lazy(() => import('./pages/SearchPage'))
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
+const CareerProfilePage = lazy(() => import('./pages/CareerProfilePage'))
+const ResumesPage = lazy(() => import('./pages/ResumesPage'))
+const ResumeReviewPage = lazy(() => import('./pages/ResumeReviewPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 /**
@@ -53,11 +52,14 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<DashboardPage />} />
-              <Route path="chat" element={<ChatPage />} />
-              <Route path="documents" element={<DocumentsPage />} />
-              <Route path="collections" element={<CollectionsPage />} />
-              <Route path="search" element={<SearchPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="profile" element={<CareerProfilePage />} />
+              <Route path="resumes" element={<ResumesPage />} />
+              <Route path="resumes/:id/review" element={<ResumeReviewPage />} />
+              <Route path="jobs" element={<PlaceholderPage title="Job Match" />} />
+              <Route path="applications" element={<PlaceholderPage title="Applications" />} />
+              <Route path="interview" element={<PlaceholderPage title="Interview Prep" />} />
+              <Route path="projects" element={<PlaceholderPage title="Projects" />} />
+              <Route path="learning" element={<PlaceholderPage title="Learning" />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>

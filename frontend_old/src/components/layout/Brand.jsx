@@ -51,11 +51,11 @@ export default function Brand({ size = 'md', className, withTagline = false, ani
       <BrandMark className={mark} animated={animated} />
       <span className="leading-none">
         <span className={clsx('block font-semibold tracking-[0.16em] text-ink', text)}>
-          ALBATROSS
+          ALBATROSS CAREER
         </span>
         {withTagline && (
           <span className="mt-1 block text-2xs tracking-wide text-muted">
-            Navigate your knowledge.
+            Turn your skills into your next opportunity.
           </span>
         )}
       </span>

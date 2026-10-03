@@ -24,20 +24,25 @@ import { useStore } from '../../store'
 import { useAuthStore } from '../../store/authStore'
 import { initials } from '../../lib/format'
 
-const NAV = [
-  { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/app/chat', label: 'Chat', icon: MessageSquare },
-  { to: '/app/documents', label: 'Documents', icon: FileText },
-  { to: '/app/collections', label: 'Collections', icon: FolderOpen },
-  { to: '/app/search', label: 'Search', icon: Search },
-  { to: '/app/analytics', label: 'Analytics', icon: BarChart3 },
+const PRIMARY_NAV = [
+  { to: '/app', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/app/profile', label: 'Career Profile', icon: FolderOpen },
+  { to: '/app/resumes', label: 'Resumes', icon: FileText },
+  { to: '/app/jobs', label: 'Job Match', icon: Search },
+  { to: '/app/applications', label: 'Applications', icon: BarChart3 },
+  { to: '/app/interview', label: 'Interview Prep', icon: MessageSquare },
+]
+
+const SECONDARY_NAV = [
+  { to: '/app/projects', label: 'Projects', icon: FolderOpen },
+  { to: '/app/learning', label: 'Learning', icon: FolderOpen },
   { to: '/app/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
 function NavList({ onNavigate }) {
-  return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5">
-      {NAV.map((item) => (
+  const renderLinks = (links) => (
+    <nav className="flex flex-col gap-0.5">
+      {links.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
@@ -60,6 +65,19 @@ function NavList({ onNavigate }) {
         </NavLink>
       ))}
     </nav>
+  )
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <div className="px-3 text-xs font-semibold uppercase tracking-wider text-muted mb-2">Platform</div>
+        {renderLinks(PRIMARY_NAV)}
+      </div>
+      <div>
+        <div className="px-3 text-xs font-semibold uppercase tracking-wider text-muted mb-2">Resources</div>
+        {renderLinks(SECONDARY_NAV)}
+      </div>
+    </div>
   )
 }
 

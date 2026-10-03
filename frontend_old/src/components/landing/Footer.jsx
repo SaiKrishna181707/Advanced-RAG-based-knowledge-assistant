@@ -11,12 +11,11 @@ export default function Footer() {
             <Link to="/" className="inline-flex items-center gap-3 hover:opacity-80 transition-opacity">
               <BrandMark className="h-8 w-8 text-accent" />
               <span className="font-semibold tracking-[0.16em] text-ink text-xl">
-                ALBATROSS
+                ALBATROSS CAREER
               </span>
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted">
-              Document intelligence and grounded answers, cited back to your own sources. 
-              Built for teams who need to verify every claim.
+              An AI career workspace that turns your real skills, experience, projects, and achievements into better job applications.
             </p>
             <div className="mt-8 flex gap-5">
               <a href="https://github.com/SaiKrishna181707/Advanced-RAG-based-knowledge-assistant" className="text-muted hover:text-ink transition-colors">
@@ -56,10 +55,10 @@ export default function Footer() {
 
         <div className="mt-20 flex flex-col items-center justify-between gap-6 border-t border-line/40 pt-8 sm:flex-row">
           <p className="text-sm text-muted">
-            &copy; {new Date().getFullYear()} ALBATROSS. All rights reserved.
+            &copy; {new Date().getFullYear()} ALBATROSS CAREER. All rights reserved.
           </p>
           <p className="text-xs text-muted/60">
-            Documents stay in your account. Retrieval is scoped to you on every request.
+            Your career profile and resumes stay private in your account.
           </p>
         </div>
       </div>

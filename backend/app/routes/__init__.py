@@ -12,6 +12,8 @@ from .conversations import conversations_bp
 from .documents import documents_bp
 from .meta import meta_bp
 from .search import search_bp
+from .career import bp as career_bp
+from .career_resumes import bp as career_resumes_bp
 
 BLUEPRINTS = (
     (meta_bp, "/api"),
@@ -23,6 +25,8 @@ BLUEPRINTS = (
     (chat_bp, "/api/chat"),
     (search_bp, "/api/search"),
     (analytics_bp, "/api/analytics"),
+    (career_bp, "/api/career"),
+    (career_resumes_bp, "/api/career/resumes"),
 )
 
 
